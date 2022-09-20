@@ -69,7 +69,7 @@ export function createListenerPropsForwarder<
 >(props: T, keys?: K[]): UseListenerForwardReturn<T, K> {
   const listenerKeys =
     // should its type filter it?
-    keys || Object.keys(props).filter((prop) => isHandlerKey(prop))
+    keys || Object.keys(props).filter(prop => isHandlerKey(prop))
 
   return {
     props: listenerKeys.reduce((forwardProps, k) => {
@@ -155,7 +155,7 @@ export function createPropsFactory<T extends ComponentObjectPropsOptions>(
     return normalized
   }
 
-  return ((defaultProps) => {
+  return (defaultProps => {
     if (!defaultProps) {
       return props
     }
@@ -187,16 +187,23 @@ export interface PropsFactory<T extends ComponentObjectPropsOptions> {
     | WithDefaultProps<T, D>
 }
 
+export function withDefaultProps<T extends ComponentPropsOptions>(
+  props: T
+): WithDefaultProps<T>
 export function withDefaultProps<
   T extends ComponentPropsOptions,
   D extends Partial<Record<keyof T, unknown>>
->(props: T, defaultProps: D): WithDefaultProps<T, D> {
-  return createPropsFactory(props)(defaultProps)
+>(props: T, defaultProps: D): WithDefaultProps<T, D>
+export function withDefaultProps<
+  T extends ComponentPropsOptions,
+  D extends Partial<Record<keyof T, unknown>>
+>(props: T, defaultProps?: D): WithDefaultProps<T, D> {
+  return createPropsFactory(props)(defaultProps) as WithDefaultProps<T, D>
 }
 
 export type WithDefaultProps<
   T extends ComponentObjectPropsOptions,
-  D extends Partial<Record<keyof T, unknown>>
+  D extends Partial<Record<keyof T, unknown>> = {}
 > = {
   [P in keyof T]-?: unknown extends D[P]
     ? T[P]

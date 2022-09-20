@@ -1,6 +1,6 @@
 {
   "name": "@visoning/vue-utility",
-  "version": "0.0.1",
+  "version": "0.0.12",
   "description": "It contains some of commonly used utility functions that are compatible with Vue 2 & 3.",
   "files": [
     "dist"
@@ -38,6 +38,12 @@
   },
   "peerDependencies": {
     "@vue/composition-api": "^1.4.0",
+    "typescript": ">=4.4.4",
     "vue": "^2.6.14 || ^3.2.0"
+  },
+  "peerDependenciesMeta": {
+    "@vue/composition-api": {
+      "optional": true
+    }
   }
 }

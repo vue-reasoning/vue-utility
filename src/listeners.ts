@@ -202,7 +202,7 @@ export function getEmitIfHasListener<T extends AnyHandler = AnyHandler>(
     return handler as T
   } else if (Array.isArray(handler) && handler.length) {
     return ((...args) =>
-      (handler as Function[]).forEach((handler) => handler(...args))) as T
+      (handler as Function[]).forEach(handler => handler(...args))) as T
   }
 }
 
@@ -225,8 +225,11 @@ export function emitListener(
 
 export interface UseListenersEmitterReturn<Event extends string = string> {
   context: ListenerContext
-  proxy: <T extends AnyHandler = AnyHandler>(event: string) => T
-  has: (event: Event) => boolean
+  proxy: <T extends AnyHandler = AnyHandler>(
+    event: string,
+    overrideOptions?: EmitterOptionsType
+  ) => T
+  has: (event: Event, overrideOptions?: EmitterOptionsType) => boolean
   emit: (event: Event, ...args: any[]) => void
   customEmit: (
     event: Event,
@@ -245,11 +248,16 @@ export function useListenersEmitter<Event extends string = string>(
   }
   return {
     context,
-    proxy: <T extends AnyHandler = AnyHandler>(event: string): T =>
-      getEmitIfHasListener(context, event, options) || ((() => {}) as T),
-    has: (event) => hasListener(context, event, options),
-    emit: (event, ...args) => emitListener(context, event, ...args),
-    customEmit: (event, options, ...args) =>
-      emitListener(context, event, options, ...args)
+    proxy: <T extends AnyHandler = AnyHandler>(
+      event: string,
+      overrideOptions?: EmitterOptionsType
+    ): T =>
+      getEmitIfHasListener(context, event, overrideOptions ?? options) ||
+      ((() => {}) as T),
+    has: (event, overrideOptions) =>
+      hasListener(context, event, overrideOptions ?? options),
+    emit: (event, ...args) => emitListener(context, event, options, ...args),
+    customEmit: (event, overrideOptions, ...args) =>
+      emitListener(context, event, overrideOptions ?? options, ...args)
   }
 }
