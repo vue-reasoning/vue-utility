@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "lib": ["esnext", "dom"],
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "allowJs": false,
+    "strict": true,
+    "importsNotUsedAsValues": "error",
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": "."
+  },
+  "exclude": ["node_modules"]
+}

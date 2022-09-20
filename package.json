@@ -1,0 +1,43 @@
+{
+  "name": "@visoning/vue-utility",
+  "version": "0.0.1",
+  "description": "It contains some of commonly used utility functions that are compatible with Vue 2 & 3.",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup"
+  },
+  "keywords": [
+    "Vue",
+    "vue2",
+    "utility"
+  ],
+  "author": "nooooooom <https://github.com/nooooooom>",
+  "license": "MIT",
+  "dependencies": {
+    "@vue/shared": "^3.2.7",
+    "vue-demi": "*"
+  },
+  "devDependencies": {
+    "tsup": "^6.2.3",
+    "typescript": "^4.7.4",
+    "vue": "^3.2.7",
+    "vue2": "npm:vue@^2.7.10"
+  },
+  "peerDependencies": {
+    "@vue/composition-api": "^1.4.0",
+    "vue": "^2.6.14 || ^3.2.0"
+  }
+}
