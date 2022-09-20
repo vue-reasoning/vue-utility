@@ -1,6 +1,6 @@
 {
   "name": "@visoning/vue-utility",
-  "version": "0.0.12",
+  "version": "0.0.12-alpha-1",
   "description": "It contains some of commonly used utility functions that are compatible with Vue 2 & 3.",
   "files": [
     "dist"
