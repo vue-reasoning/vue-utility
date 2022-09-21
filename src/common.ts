@@ -10,6 +10,20 @@ export function isDef<T>(v: T): v is NonNullable<T> {
   return v !== undefined && v !== null
 }
 
+export function cacheStringFunction<T extends (str: string) => string>(
+  fn: T,
+  ignoreNullable = false
+): T {
+  const cache: Record<string, string> = Object.create(null)
+  return ((str: string) => {
+    const hit = cache[str]
+    if (ignoreNullable && str in cache) {
+      return hit
+    }
+    return hit || (cache[str] = fn(str))
+  }) as any
+}
+
 export type PropertyName = string | number | symbol
 
 type MaybeArray<T> = T | ReadonlyArray<T>

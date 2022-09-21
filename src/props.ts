@@ -6,7 +6,8 @@ import type {
 } from 'vue-demi'
 import { isArray, isFunction } from '@vue/shared'
 
-import { emitListener, createListenerContext, isHandlerKey } from './listeners'
+import { isHandlerKey, useListeners } from './listeners'
+import { cacheStringFunction } from './common'
 
 //
 // Prop options ==================================
@@ -78,14 +79,10 @@ export function createListenerPropsForwarder<
     }, {} as Pick<T, K>),
 
     forwards: (instance?: ReturnType<typeof getCurrentInstance>) => {
-      const context = createListenerContext(instance!)
-      if (!context) {
-        console.warn(`useListenerForward() called without active instance.`)
-      }
+      const listeners = useListeners(instance, true)
 
       return listenerKeys.reduce((forwards, key) => {
-        forwards[key as keyof typeof forwards] = ((...args: any[]) =>
-          emitListener(context, key, true, ...args)) as any
+        forwards[key as keyof typeof forwards] = listeners.proxy(key) as any
         return forwards
       }, {} as Required<ExtractPropTypes<Pick<T, K>>>)
     }
@@ -142,18 +139,9 @@ export interface UseListenerForwardReturn<
 export function createPropsFactory<T extends ComponentObjectPropsOptions>(
   props: T
 ) {
-  const normalizedCache = {} as NormalizePropsOptions<T>
-
-  const getNormalizedProp = (prop: string) => {
-    let normalized: NormalizePropsOption<any>
-    if (prop in normalizedCache) {
-      normalized = normalizedCache[prop]
-    } else {
-      normalized = normalizePropOptions(props[prop as keyof typeof props])
-      normalizedCache[prop] = normalized
-    }
-    return normalized
-  }
+  const getNormalizedProp = cacheStringFunction((prop: string) =>
+    normalizePropOptions(props[prop])
+  )
 
   return (defaultProps => {
     if (!defaultProps) {

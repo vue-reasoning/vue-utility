@@ -1,6 +1,6 @@
 {
   "name": "@visoning/vue-utility",
-  "version": "0.0.13",
+  "version": "0.0.14-alpha-1",
   "description": "It contains some of commonly used utility functions that are compatible with Vue 2 & 3.",
   "files": [
     "dist"
@@ -17,7 +17,8 @@
   },
   "scripts": {
     "dev": "tsup --watch",
-    "build": "tsup"
+    "build": "tsup",
+    "prepublish": "nr build"
   },
   "keywords": [
     "Vue",
@@ -31,6 +32,7 @@
     "vue-demi": "*"
   },
   "devDependencies": {
+    "@antfu/ni": "^0.18.0",
     "tsup": "^6.2.3",
     "typescript": "^4.7.4",
     "vue": "^3.2.7",

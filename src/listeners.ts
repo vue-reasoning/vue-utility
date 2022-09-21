@@ -141,9 +141,9 @@ function normalizeListenerContext(ctx: CompatListenerContext): ListenerContext {
 }
 
 export function createListenerContext(
-  instance: CompatListenerContext = getCurrentInstance()!
-): ListenerContext {
-  return normalizeListenerContext(instance)
+  instance = getCurrentInstance()
+): ListenerContext | null {
+  return instance?.proxy ? normalizeListenerContext(instance.proxy) : null
 }
 
 type Handler = Function | Function[]
@@ -242,7 +242,7 @@ export function useListeners<Event extends string = string>(
 ): UseListenersReturn<Event> {
   const context = createListenerContext(instance!)
   if (!context) {
-    console.warn(`useListenerContext() called without active instance.`)
+    throw Error('useListenerContext() called without active instance.')
   }
 
   const createEmit =

@@ -1,6 +1,7 @@
 lockfileVersion: 5.4
 
 specifiers:
+  '@antfu/ni': ^0.18.0
   '@vue/shared': ^3.2.7
   tsup: ^6.2.3
   typescript: ^4.7.4
@@ -13,12 +14,18 @@ dependencies:
   vue-demi: 0.13.11_vue@3.2.39
 
 devDependencies:
+  '@antfu/ni': 0.18.0
   tsup: 6.2.3_typescript@4.8.3
   typescript: 4.8.3
   vue: 3.2.39
   vue2: /vue/2.7.10
 
 packages:
+
+  /@antfu/ni/0.18.0:
+    resolution: {integrity: sha512-D0eek5EV8wOUpZNVAs/mPyeC5TMWFXqchqCyPiR6Lj5FgmSJw0EpFLqAczHX0O5+Jc07N7NBwBip85Gi1MBJnA==}
+    hasBin: true
+    dev: true
 
   /@babel/helper-string-parser/7.18.10:
     resolution: {integrity: sha512-XtIfWmeNY3i4t7t4D2t02q50HvqHybPqW2ki1kosnvWCwuCMeo81Jf0gwr85jy/neUdg5XDdeFE/80DXiO+njw==}

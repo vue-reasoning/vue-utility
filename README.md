@@ -1,1 +1,1 @@
-# vue-utils
+# @visoning/vue-utility
