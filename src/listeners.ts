@@ -141,13 +141,9 @@ function normalizeListenerContext(ctx: CompatListenerContext): ListenerContext {
 }
 
 export function createListenerContext(
-  instance = getCurrentInstance()!
+  instance: CompatListenerContext = getCurrentInstance()!
 ): ListenerContext {
-  return {
-    emit: proxyFunction(instance.proxy!, '$emit'),
-    props: instance.proxy!.$props,
-    listeners: (instance.proxy as LegacyComponentInstanceParital)?.$listeners
-  }
+  return normalizeListenerContext(instance)
 }
 
 type Handler = Function | Function[]
@@ -223,41 +219,53 @@ export function emitListener(
   getEmitIfHasListener(ctx, event, options)?.(...args)
 }
 
-export interface UseListenersEmitterReturn<Event extends string = string> {
+export interface UseListenersReturn<Event extends string = string> {
   context: ListenerContext
+  emit: {
+    (event: Event, ...args: any[]): void
+    withOptions: (
+      overrideOptions?: EmitterOptionsType
+    ) => (event: Event, ...args: any[]) => void
+  }
+  has: (event: Event, overrideOptions?: EmitterOptionsType) => boolean
   proxy: <T extends AnyHandler = AnyHandler>(
     event: string,
     overrideOptions?: EmitterOptionsType
   ) => T
-  has: (event: Event, overrideOptions?: EmitterOptionsType) => boolean
-  emit: (event: Event, ...args: any[]) => void
-  customEmit: (
-    event: Event,
-    options: EmitterOptionsType,
-    ...args: any[]
-  ) => void
 }
 
-export function useListenersEmitter<Event extends string = string>(
+export const EMPTY_PROXY = () => {}
+
+export function useListeners<Event extends string = string>(
   instance = getCurrentInstance(),
-  options?: EmitterOptionsType
-): UseListenersEmitterReturn<Event> {
+  options: EmitterOptionsType = true
+): UseListenersReturn<Event> {
   const context = createListenerContext(instance!)
   if (!context) {
     console.warn(`useListenerContext() called without active instance.`)
   }
+
+  const createEmit =
+    (overrideOptions?: EmitterOptionsType) =>
+    (event: Event, ...args: any[]) =>
+      emitListener(context, event, overrideOptions ?? options, ...args)
+
+  const emit = createEmit() as UseListenersReturn<Event>['emit']
+
+  emit.withOptions = options => createEmit(options)
+
   return {
     context,
+    emit,
+    has: (event, overrideOptions) =>
+      hasListener(context, event, overrideOptions ?? options),
     proxy: <T extends AnyHandler = AnyHandler>(
       event: string,
       overrideOptions?: EmitterOptionsType
     ): T =>
       getEmitIfHasListener(context, event, overrideOptions ?? options) ||
-      ((() => {}) as T),
-    has: (event, overrideOptions) =>
-      hasListener(context, event, overrideOptions ?? options),
-    emit: (event, ...args) => emitListener(context, event, options, ...args),
-    customEmit: (event, overrideOptions, ...args) =>
-      emitListener(context, event, overrideOptions ?? options, ...args)
+      // Since Vue throws an error on the listener passed in as Nullable,
+      // we return it when no listener exists.
+      (EMPTY_PROXY as T)
   }
 }

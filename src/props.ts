@@ -300,7 +300,7 @@ export type NormalizePropsOptions<T extends ComponentPropsOptions> =
       }
 
 //
-// Prop type ==================================
+// Define prop ==================================
 //
 
 export const definePropType = <T>(
