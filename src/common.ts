@@ -1,5 +1,23 @@
 import { isArray } from '@vue/shared'
 
+export {
+  isArray,
+  isDate,
+  isFunction,
+  isIntegerKey,
+  isObject,
+  isPlainObject,
+  isPromise,
+  isSet,
+  isString,
+  isSymbol,
+  hasChanged,
+  hasOwn,
+  def,
+  toTypeString,
+  toRawType
+} from '@vue/shared'
+
 export function noop() {}
 
 export function isUndef(v: any): v is undefined | null {

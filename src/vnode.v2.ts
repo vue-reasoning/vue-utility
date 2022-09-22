@@ -28,6 +28,7 @@ export function cloneVNode(
   extraProps: Record<string, any> | null = {},
   mergeRef = false
 ): any {
+  if (!vnode) return
   if (!extraProps) {
     extraProps = {}
   }

@@ -1,6 +1,6 @@
 {
   "name": "@visoning/vue-utility",
-  "version": "0.0.14-alpha-1",
+  "version": "0.0.14",
   "description": "It contains some of commonly used utility functions that are compatible with Vue 2 & 3.",
   "files": [
     "dist"
@@ -45,6 +45,9 @@
   },
   "peerDependenciesMeta": {
     "@vue/composition-api": {
+      "optional": true
+    },
+    "typescript": {
       "optional": true
     }
   }

@@ -175,15 +175,15 @@ export interface PropsFactory<T extends ComponentObjectPropsOptions> {
     | WithDefaultProps<T, D>
 }
 
-export function withDefaultProps<T extends ComponentPropsOptions>(
+export function withDefaultProps<T extends ComponentObjectPropsOptions>(
   props: T
 ): WithDefaultProps<T>
 export function withDefaultProps<
-  T extends ComponentPropsOptions,
+  T extends ComponentObjectPropsOptions,
   D extends Partial<Record<keyof T, unknown>>
 >(props: T, defaultProps: D): WithDefaultProps<T, D>
 export function withDefaultProps<
-  T extends ComponentPropsOptions,
+  T extends ComponentObjectPropsOptions,
   D extends Partial<Record<keyof T, unknown>>
 >(props: T, defaultProps?: D): WithDefaultProps<T, D> {
   return createPropsFactory(props)(defaultProps) as WithDefaultProps<T, D>

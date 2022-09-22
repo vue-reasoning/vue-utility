@@ -51,6 +51,12 @@ export function isText(vnode: VNode) {
   return isVue3 ? vnode.type === Vue.Text : V2VnodeMethods.isText(vnode)
 }
 
+export function hasArrayChildren(vnode: VNode) {
+  return isVue3
+    ? vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN
+    : !!vnode.children?.length
+}
+
 export const cloneVNode = isVue3 ? Vue.cloneVNode : V2VnodeMethods.cloneVNode
 
 //
@@ -145,11 +151,11 @@ export function useFirstQualifiedElement(
     if (isVue3) {
       const vnode = instance?.vnode
       elementRef.value =
-        vnode && getFirstQualifiedElementFormVNodes([vnode], qualifier)
+        vnode && getFirstQualifiedElementFromVNodes([vnode], qualifier)
     } else {
       // because Vue2 supports element hoisting for HOC, so we can do this
-      const $el = instance?.proxy?.$el
-      elementRef.value = qualifier($el) ? $el : null
+      const element = instance?.proxy?.$el
+      elementRef.value = element && qualifier(element) ? element : undefined
     }
   }
 
@@ -163,28 +169,50 @@ export function useFirstQualifiedElement(
   return elementRef
 }
 
-export function getFirstQualifiedElementFormVNodes(
+export function getFirstQualifiedElementFromVNodes(
   vnodes: VNode[],
   qualifier = isRealElement
 ): HTMLElement | undefined {
   let element: HTMLElement | undefined
   for (let i = 0; i < vnodes.length; i++) {
     const vnode = vnodes[i]
-    if (isElement(vnode) && qualifier(vnode.el as HTMLElement))
-      return vnode.el as HTMLElement
-    if (isComponent(vnode) && vnode.component?.subTree) {
+    if (!isVue3) {
+      if (
+        (isElement(vnode) || isComponent(vnode)) &&
+        qualifier((vnode as any).elm)
+      ) {
+        return (vnode as any).elm
+      }
+
+      if (hasArrayChildren(vnode)) {
+        if (
+          (element = getFirstQualifiedElementFromVNodes(
+            vnode.children as VNode[],
+            qualifier
+          ))
+        ) {
+          return element
+        }
+      }
+    }
+
+    if (isElement(vnode)) {
+      if (qualifier((element = vnode.el as HTMLElement))) {
+        return element
+      }
+    } else if (isComponent(vnode) && vnode.component?.subTree) {
       // HOC el forward
       if (
-        (element = getFirstQualifiedElementFormVNodes(
+        (element = getFirstQualifiedElementFromVNodes(
           [vnode.component.subTree],
           qualifier
         ))
       ) {
         return element
       }
-    } else if (vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+    } else if (hasArrayChildren(vnode)) {
       if (
-        (element = getFirstQualifiedElementFormVNodes(
+        (element = getFirstQualifiedElementFromVNodes(
           vnode.children as VNode[],
           qualifier
         ))
