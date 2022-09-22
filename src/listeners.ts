@@ -198,7 +198,7 @@ export function getEmitIfHasListener<T extends AnyHandler = AnyHandler>(
     return handler as T
   } else if (Array.isArray(handler) && handler.length) {
     return ((...args) =>
-      (handler as Function[]).forEach(handler => handler(...args))) as T
+      (handler as Function[]).forEach((handler) => handler(...args))) as T
   }
 }
 
@@ -252,7 +252,7 @@ export function useListeners<Event extends string = string>(
 
   const emit = createEmit() as UseListenersReturn<Event>['emit']
 
-  emit.withOptions = options => createEmit(options)
+  emit.withOptions = (options) => createEmit(options)
 
   return {
     context,

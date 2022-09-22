@@ -9,6 +9,7 @@ import {
 
 import { isHandlerKey, toHandlerKey, toListenerKey } from './listeners'
 import * as V2VnodeMethods from './vnode.v2'
+import { isFlase, isUndef } from './common'
 
 export { parseStringStyle, stringifyStyle } from '@vue/shared'
 export type { NormalizedStyle } from '@vue/shared'
@@ -147,11 +148,17 @@ export function useFirstQualifiedElement(
 ) {
   const elementRef = ref<HTMLElement>()
 
+  const isQualifiedChild = (vnode: VNode) =>
+    !!(vnode.el && qualifier(vnode.el as HTMLElement))
+
   const updateElement = () => {
     if (isVue3) {
       const vnode = instance?.vnode
-      elementRef.value =
-        vnode && getFirstQualifiedElementFromVNodes([vnode], qualifier)
+      const qualifiedChild =
+        vnode && findFirstQualifiedChild([vnode], isQualifiedChild)
+      elementRef.value = qualifiedChild
+        ? (qualifiedChild.el as HTMLElement)
+        : undefined
     } else {
       // because Vue2 supports element hoisting for HOC, so we can do this
       const element = instance?.proxy?.$el
@@ -169,56 +176,30 @@ export function useFirstQualifiedElement(
   return elementRef
 }
 
-export function getFirstQualifiedElementFromVNodes(
-  vnodes: VNode[],
-  qualifier = isRealElement
-): HTMLElement | undefined {
-  let element: HTMLElement | undefined
-  for (let i = 0; i < vnodes.length; i++) {
-    const vnode = vnodes[i]
-    if (!isVue3) {
-      if (
-        (isElement(vnode) || isComponent(vnode)) &&
-        qualifier((vnode as any).elm)
-      ) {
-        return (vnode as any).elm
-      }
+export function findFirstQualifiedChild(
+  children: VNode[] | undefined,
+  qualifier: (vnode: VNode) => boolean
+): VNode | null {
+  if (!children) return null
 
-      if (hasArrayChildren(vnode)) {
-        if (
-          (element = getFirstQualifiedElementFromVNodes(
-            vnode.children as VNode[],
-            qualifier
-          ))
-        ) {
-          return element
-        }
+  let i: VNode | null
+  for (const child of children) {
+    if (qualifier(child)) return child
+    if (isVue3) {
+      if (
+        child.component?.subTree &&
+        (i = findFirstQualifiedChild([child.component.subTree], qualifier))
+      ) {
+        return i
       }
     }
-
-    if (isElement(vnode)) {
-      if (qualifier((element = vnode.el as HTMLElement))) {
-        return element
-      }
-    } else if (isComponent(vnode) && vnode.component?.subTree) {
-      // HOC el forward
-      if (
-        (element = getFirstQualifiedElementFromVNodes(
-          [vnode.component.subTree],
-          qualifier
-        ))
-      ) {
-        return element
-      }
-    } else if (hasArrayChildren(vnode)) {
-      if (
-        (element = getFirstQualifiedElementFromVNodes(
-          vnode.children as VNode[],
-          qualifier
-        ))
-      ) {
-        return element
-      }
+    if (
+      hasArrayChildren(child) &&
+      (i = findFirstQualifiedChild(child.children as VNode[], qualifier))
+    ) {
+      return i
     }
   }
+
+  return null
 }

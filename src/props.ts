@@ -7,7 +7,7 @@ import type {
 import { isArray, isFunction } from '@vue/shared'
 
 import { isHandlerKey, useListeners } from './listeners'
-import { cacheStringFunction } from './common'
+import { cacheKeyofFunction } from './common'
 
 //
 // Prop options ==================================
@@ -70,7 +70,7 @@ export function createListenerPropsForwarder<
 >(props: T, keys?: K[]): UseListenerForwardReturn<T, K> {
   const listenerKeys =
     // should its type filter it?
-    keys || Object.keys(props).filter(prop => isHandlerKey(prop))
+    keys || Object.keys(props).filter((prop) => isHandlerKey(prop))
 
   return {
     props: listenerKeys.reduce((forwardProps, k) => {
@@ -139,11 +139,11 @@ export interface UseListenerForwardReturn<
 export function createPropsFactory<T extends ComponentObjectPropsOptions>(
   props: T
 ) {
-  const getNormalizedProp = cacheStringFunction((prop: string) =>
+  const getNormalizedProp = cacheKeyofFunction((prop: string) =>
     normalizePropOptions(props[prop])
   )
 
-  return (defaultProps => {
+  return ((defaultProps) => {
     if (!defaultProps) {
       return props
     }

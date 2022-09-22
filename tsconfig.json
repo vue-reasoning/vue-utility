@@ -9,7 +9,8 @@
     "importsNotUsedAsValues": "error",
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "types": ["vitest", "vitest/globals"]
   },
   "exclude": ["node_modules"]
 }
