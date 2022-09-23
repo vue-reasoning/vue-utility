@@ -1,26 +1,28 @@
-import { isArray } from '@vue/shared'
+import { isArray, isObject, isString } from '@vue/shared'
 
 import { isDef } from './common'
 import { normalizeClass, normalizeListeners, normalizeStyle } from './vnode'
 
 export function isElement(vnode: any): boolean {
-  return isDef(vnode?.tag) && !isComponent(vnode)
+  return isObject(vnode) && isDef(vnode.tag) && !isComponent(vnode)
 }
 
 export function isComponent(vnode: any): boolean {
-  return isDef(vnode) && (vnode.componentOptions || !isAsyncPlaceholder(vnode))
+  return (
+    isObject(vnode) && (vnode.componentOptions || !isAsyncPlaceholder(vnode))
+  )
 }
 
 export function isComment(vnode: any): boolean {
-  return !!vnode?.isComment
+  return isObject(vnode) && vnode.isComment
 }
 
 export function isText(vnode: any): boolean {
-  return typeof vnode === 'string' || (vnode && !vnode.tag && !isComment(vnode))
+  return isString(vnode) || (isObject(vnode) && !vnode.tag && !isComment(vnode))
 }
 
 export function isAsyncPlaceholder(vnode: any): boolean {
-  return isDef(vnode) && vnode.isComment && vnode.asyncFactory
+  return isObject(vnode) && vnode.isComment && vnode.asyncFactory
 }
 
 export function cloneVNode(

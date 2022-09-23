@@ -7,9 +7,9 @@ import {
   normalizeStyle as SharedNormalizeStyle
 } from '@vue/shared'
 
+import { isUndef } from './common'
 import { isHandlerKey, toHandlerKey, toListenerKey } from './listeners'
 import * as V2VnodeMethods from './vnode.v2'
-import { isFlase, isUndef } from './common'
 
 export { parseStringStyle, stringifyStyle } from '@vue/shared'
 export type { NormalizedStyle } from '@vue/shared'
@@ -30,13 +30,13 @@ export const enum ShapeFlags {
 
 export function isElement(vnode: VNode) {
   return isVue3
-    ? vnode.shapeFlag & ShapeFlags.ELEMENT
+    ? !!(vnode.shapeFlag & ShapeFlags.ELEMENT)
     : V2VnodeMethods.isElement(vnode)
 }
 
 export function isComponent(vnode: VNode) {
   return isVue3
-    ? vnode.shapeFlag & ShapeFlags.COMPONENT
+    ? !!(vnode.shapeFlag & ShapeFlags.COMPONENT)
     : V2VnodeMethods.isComponent(vnode)
 }
 
@@ -54,14 +54,14 @@ export function isText(vnode: VNode) {
 
 export function hasArrayChildren(vnode: VNode) {
   return isVue3
-    ? vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN
+    ? !!(vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN)
     : !!vnode.children?.length
 }
 
 export const cloneVNode = isVue3 ? Vue.cloneVNode : V2VnodeMethods.cloneVNode
 
 //
-// props ==================================
+// Vnode props ==================================
 //
 
 export function mergeProps(
@@ -73,12 +73,12 @@ export function mergeProps(
     for (const key in toMerge) {
       if (key === 'class') {
         if (ret.class !== toMerge.class) {
-          ret.class = normalizeClass([ret.class, toMerge.class])
+          ret.class = normalizeClass(ret.class, toMerge.class)
         }
       } else if (key === 'style') {
-        ret.style = normalizeStyle([ret.style, toMerge.style])
+        ret.style = normalizeStyle(ret.style, toMerge.style)
       } else if (isHandlerKey(key)) {
-        Object.assign(ret, normalizeListeners(ret, toMerge))
+        ret[key] = normalizeListener(ret[key], toMerge[key])
       } else if (key !== '') {
         ret[key] = toMerge[key]
       }
@@ -95,8 +95,17 @@ export function normalizeStyle(...styles: unknown[]) {
   return SharedNormalizeStyle(styles)
 }
 
+export function normalizeListener(...listeners: Array<Function | Function[]>) {
+  return listeners.reduce<Function[]>((normalized, listener) => {
+    if (listener && (isArray(listener) || !normalized.includes(listener))) {
+      return normalized.concat(listener).flat()
+    }
+    return normalized
+  }, [])
+}
+
 export function normalizeListeners(
-  ...args: (Record<string, any> | undefined)[]
+  ...args: (Record<string, any> | undefined | null)[]
 ) {
   const ret: Record<string, Function[]> = {}
   for (let i = 0; i < args.length; i++) {
@@ -109,9 +118,7 @@ export function normalizeListeners(
         existing !== incoming &&
         !(isArray(existing) && existing.includes(incoming))
       ) {
-        ret[key] = existing
-          ? ([] as Function[]).concat(existing, incoming).flat()
-          : incoming
+        ret[key] = normalizeListener(existing, incoming)
       }
     }
   }
@@ -137,10 +144,8 @@ export function normalizeProps(props: Record<string, any>) {
 }
 
 //
-// Hooks ==================================
+// Vnode ==================================
 //
-
-const isRealElement = (element: HTMLElement) => element.nodeType === 1
 
 export function getVNodeElement<T extends Element>(
   vnode: VNode
@@ -148,50 +153,26 @@ export function getVNodeElement<T extends Element>(
   return isVue3 ? vnode.el : (vnode as any).elm
 }
 
-export function useFirstQualifiedElement(
-  instance = getCurrentInstance(),
-  qualifier = isRealElement
+export function findFirstQualifiedElement(
+  children: VNode[] | undefined | null,
+  qualifier: (element: Element) => boolean
 ) {
-  const elementRef = ref<HTMLElement>()
-
-  const isQualifiedChild = (vnode: VNode) => {
-    const el = getVNodeElement<HTMLElement>(vnode)
-    return !!el && qualifier(el)
-  }
-
-  const updateElement = () => {
-    if (isVue3) {
-      const vnode = instance?.vnode
-      const qualifiedChild =
-        vnode && findFirstQualifiedChild([vnode], isQualifiedChild)
-      elementRef.value = qualifiedChild
-        ? getVNodeElement<HTMLElement>(qualifiedChild)!
-        : undefined
-    } else {
-      // because Vue2 supports element hoisting for HOC, so we can do this
-      const element = instance?.proxy?.$el
-      elementRef.value = element && qualifier(element) ? element : undefined
-    }
-  }
-
-  onMounted(updateElement)
-  onUpdated(updateElement)
-
-  if (isVue3 ? instance?.isMounted : (instance as any)?._isMounted) {
-    updateElement()
-  }
-
-  return elementRef
+  const qualified = findFirstQualifiedChild(children, (vnode) => {
+    const element = getVNodeElement(vnode)
+    return !!element && qualifier(element)
+  })
+  return qualified && getVNodeElement(qualified)
 }
 
 export function findFirstQualifiedChild(
-  children: VNode[] | undefined,
+  children: VNode[] | undefined | null,
   qualifier: (vnode: VNode) => boolean
 ): VNode | null {
   if (!children) return null
 
   let i: VNode | null
   for (const child of children) {
+    if (isUndef(child)) continue
     if (qualifier(child)) return child
     if (isVue3) {
       if (
@@ -210,4 +191,27 @@ export function findFirstQualifiedChild(
   }
 
   return null
+}
+
+const isRealElement = (element: Element) => element.nodeType === 1
+
+export function useFirstQualifiedElement(
+  instance = getCurrentInstance(),
+  qualifier = isRealElement
+) {
+  const elementRef = ref<HTMLElement>()
+
+  const updateElement = () => {
+    const vnode = isVue3 ? instance?.vnode : (instance as any).proxy?.$vnode
+    elementRef.value = vnode && findFirstQualifiedElement([vnode], qualifier)
+  }
+
+  onMounted(updateElement)
+  onUpdated(updateElement)
+
+  if (isVue3 ? instance?.isMounted : (instance as any)?._isMounted) {
+    updateElement()
+  }
+
+  return elementRef
 }

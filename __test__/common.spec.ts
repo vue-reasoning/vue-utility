@@ -1,11 +1,4 @@
-import {
-  cacheKeyofFunction,
-  omit,
-  partition,
-  pick,
-  pickBy,
-  toRawType
-} from 'src'
+import { cacheKeyofFunction, pick, pickBy, toRawType } from 'src'
 import type { PropertyName } from 'src'
 
 describe('common > cacheKeyofFunction', () => {
@@ -60,81 +53,6 @@ describe('common > pick', () => {
         "bar": "bar",
         "foo": "foo",
       }
-    `)
-  })
-})
-
-describe('common > omit', () => {
-  const object = {
-    foo: 'foo',
-    bar: 'bar'
-  }
-
-  test('combined path', () => {
-    expect(omit(object)).toMatchInlineSnapshot(`
-      {
-        "bar": "bar",
-        "foo": "foo",
-      }
-    `)
-    expect(omit(object, ['foo'], 'bar')).toMatchInlineSnapshot('{}')
-  })
-})
-
-describe('common > partition', () => {
-  test('array', () => {
-    expect(
-      partition(
-        [
-          { user: 'barney', age: 36, active: false },
-          { user: 'fred', age: 40, active: true },
-          { user: 'pebbles', age: 1, active: false }
-        ],
-        ({ active }) => active
-      )
-    ).toMatchInlineSnapshot(`
-      [
-        [
-          {
-            "active": true,
-            "age": 40,
-            "user": "fred",
-          },
-        ],
-        [
-          {
-            "active": false,
-            "age": 36,
-            "user": "barney",
-          },
-          {
-            "active": false,
-            "age": 1,
-            "user": "pebbles",
-          },
-        ],
-      ]
-    `)
-  })
-
-  test('object', () => {
-    expect(
-      partition(
-        {
-          foo: 1,
-          bar: 2
-        },
-        (num) => num >= 2
-      )
-    ).toMatchInlineSnapshot(`
-      [
-        [
-          2,
-        ],
-        [
-          1,
-        ],
-      ]
     `)
   })
 })

@@ -86,7 +86,15 @@ export function pick<T extends object>(
   ...props: Array<MaybeArray<PropertyName>>
 ): Partial<T> {
   const paths = props.flat()
-  return pickBy(object, (_, key) => paths.includes(key))
+  const hasIn = cacheKeyofFunction((key: PropertyName) => {
+    const index = paths.indexOf(key)
+    if (index !== -1) {
+      paths.splice(index, 1)
+      return true
+    }
+    return false
+  })
+  return pickBy(object, (_, key) => hasIn(key))
 }
 
 export function omit<T extends object, K extends PropertyName[]>(
@@ -102,46 +110,13 @@ export function omit<T extends object>(
   ...props: Array<MaybeArray<PropertyName>>
 ): Partial<T> {
   const paths = props.flat()
-  return pickBy(object, (_, key) => !paths.includes(key))
-}
-
-/**
- * Creates an array of elements split into two groups, the first of which
- * contains elements `predicate` returns truthy for, the second of which
- * contains elements `predicate` returns falsey for. The predicate is
- * invoked with one argument: (value).
- *
- * @example ```ts
- * const users = [
- *   { 'user': 'barney',  'age': 36, 'active': false },
- *   { 'user': 'fred',    'age': 40, 'active': true },
- *   { 'user': 'pebbles', 'age': 1,  'active': false }
- * ]
- *
- * partition(users, ({ active }) => active)
- * // => objects for [['fred'], ['barney', 'pebbles']]
- * ```
- */
-export function partition<T, U extends T>(
-  collection: T[] | null | undefined,
-  predicate: (value: U, index: number) => value is U
-): [U[], Array<Exclude<T, U>>]
-export function partition<T>(
-  collection: T[] | null | undefined,
-  predicate: (value: T, index: number) => boolean
-): [T[], T[]]
-export function partition<T extends object>(
-  collection: T | null | undefined,
-  predicate: (value: ValueOf<T>, key: keyof T) => boolean
-): [ValueOf<T>[], ValueOf<T>[]]
-export function partition<T>(
-  collection: T | null | undefined,
-  predicate: (value: unknown, key: any) => boolean
-): unknown {
-  const fragment = [[], []] as [any, any]
-  for (const key in collection) {
-    const value = collection[key]
-    fragment[predicate(value, key) ? 0 : 1].push(value)
-  }
-  return fragment
+  const notIn = cacheKeyofFunction((key: PropertyName) => {
+    const index = paths.indexOf(key)
+    if (index !== -1) {
+      paths.splice(index, 1)
+      return false
+    }
+    return true
+  })
+  return pickBy(object, (_, key) => notIn(key))
 }
