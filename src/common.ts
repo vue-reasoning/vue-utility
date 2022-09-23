@@ -75,7 +75,7 @@ export function pickBy<T extends object>(
 
 export function pick<T extends object, U extends keyof T>(
   object: T,
-  ...props: Array<MaybeArray<keyof T>>
+  ...props: Array<MaybeArray<U>>
 ): Pick<T, U>
 export function pick<T extends object>(
   object: T,

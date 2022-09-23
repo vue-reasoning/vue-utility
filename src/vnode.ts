@@ -142,14 +142,22 @@ export function normalizeProps(props: Record<string, any>) {
 
 const isRealElement = (element: HTMLElement) => element.nodeType === 1
 
+export function getVNodeElement<T extends Element>(
+  vnode: VNode
+): T | null | undefined {
+  return isVue3 ? vnode.el : (vnode as any).elm
+}
+
 export function useFirstQualifiedElement(
   instance = getCurrentInstance(),
   qualifier = isRealElement
 ) {
   const elementRef = ref<HTMLElement>()
 
-  const isQualifiedChild = (vnode: VNode) =>
-    !!(vnode.el && qualifier(vnode.el as HTMLElement))
+  const isQualifiedChild = (vnode: VNode) => {
+    const el = getVNodeElement<HTMLElement>(vnode)
+    return !!el && qualifier(el)
+  }
 
   const updateElement = () => {
     if (isVue3) {
@@ -157,7 +165,7 @@ export function useFirstQualifiedElement(
       const qualifiedChild =
         vnode && findFirstQualifiedChild([vnode], isQualifiedChild)
       elementRef.value = qualifiedChild
-        ? (qualifiedChild.el as HTMLElement)
+        ? getVNodeElement<HTMLElement>(qualifiedChild)!
         : undefined
     } else {
       // because Vue2 supports element hoisting for HOC, so we can do this
