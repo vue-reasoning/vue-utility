@@ -1,3 +1,4 @@
+import { isFunction } from '@vue/shared'
 import type { MaybeArray, ValueOf } from './types'
 
 export {
@@ -42,6 +43,19 @@ export function isUndef(v: any): v is undefined | null {
 
 export function isDef<T>(v: T): v is NonNullable<T> {
   return v !== undefined && v !== null
+}
+
+export function invokeIfFunction<T extends (...args: any[]) => any>(
+  fn: T,
+  ...args: Parameters<T>
+): ReturnType<T>
+export function invokeIfFunction<
+  T extends Exclude<any, (...args: any[]) => any>
+>(fn: T, ...args: any[]): void
+export function invokeIfFunction(fn: unknown, ...args: any[]) {
+  if (isFunction(fn)) {
+    return fn(...args)
+  }
 }
 
 export type PropertyName = string | number | symbol

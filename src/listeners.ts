@@ -234,7 +234,7 @@ export interface UseListenersReturn<Event extends string = string> {
   ) => T
 }
 
-export const EMPTY_PROXY = () => {}
+export const EMPTY_LISTENER_PROXY = () => {}
 
 export function useListeners<Event extends string = string>(
   instance = getCurrentInstance(),
@@ -266,6 +266,6 @@ export function useListeners<Event extends string = string>(
       getEmitIfHasListener(context, event, overrideOptions ?? options) ||
       // Since Vue throws an error on the listener passed in as Nullable,
       // we return it when no listener exists.
-      (EMPTY_PROXY as T)
+      (EMPTY_LISTENER_PROXY as T)
   }
 }
