@@ -15,7 +15,7 @@ describe('hooks > useControlledState', () => {
 
   it('controlled', async () => {
     const props = ref(0)
-    const [uncontrolled, mergedState] = useControlledState(props, 1, (v) => {
+    const [mergedState, uncontrolled] = useControlledState(props, 0, (v) => {
       props.value = v
     })
 

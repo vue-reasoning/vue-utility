@@ -1,4 +1,5 @@
 import { isFunction } from '@vue/shared'
+import { isReactive, isRef, Ref } from 'vue-demi'
 
 import type { MaybeArray, ValueOf } from './types'
 
@@ -46,6 +47,10 @@ export function isUndef(v: any): v is undefined | null {
 
 export function isDef<T>(v: T): v is NonNullable<T> {
   return v !== undefined && v !== null
+}
+
+export function isReactivity(v: any): v is Ref<any> {
+  return isRef(v) || isReactive(v)
 }
 
 export function invokeIfFunction<T extends (...args: any[]) => any>(

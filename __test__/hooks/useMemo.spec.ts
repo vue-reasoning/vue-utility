@@ -1,8 +1,8 @@
-import { nextTick, ref, watch } from 'vue-demi'
+import { isReactive, nextTick, ref, watch } from 'vue-demi'
 import { useMemo } from 'src'
 
 describe('hooks > useMemo', () => {
-  it('Should not trigger when dependency changes, but the computed value not change', async () => {
+  it('should not trigger when dependency changes, but the computed value not change', async () => {
     const foo = ref()
     const memo = useMemo(() => {
       foo.value
@@ -17,7 +17,7 @@ describe('hooks > useMemo', () => {
     expect(count).toBe(0)
   })
 
-  it('Should track deps', async () => {
+  it('should track deps', async () => {
     const foo = ref()
     const dep = ref()
     const memo = useMemo(foo, dep)
