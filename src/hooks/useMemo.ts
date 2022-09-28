@@ -1,21 +1,22 @@
 import { watch, ref, isRef, readonly } from 'vue-demi'
-import type { WatchSource, WatchOptions, ComputedGetter } from 'vue-demi'
+import type { WatchSource, WatchOptions } from 'vue-demi'
 
-import { isDef, isFunction } from '../common'
+import { isFunction } from '../common'
+import type { Dependency } from './types'
+import { isEffectiveDependency } from './types'
 
-export type useMemoDependency = WatchSource | WatchSource[]
 export type useMemoOptions = Omit<WatchOptions, 'immediate'>
 
 export function useMemo<T>(
   source: WatchSource<T>,
-  deps?: useMemoDependency,
+  deps?: Dependency | undefined | null,
   options?: useMemoOptions
 ) {
   const memoRef = ref()
 
-  if (isDef(deps)) {
+  if (isEffectiveDependency(deps)) {
     const getter = isFunction(source)
-      ? (source as ComputedGetter<any>)
+      ? source
       : isRef(source)
       ? () => source.value
       : () => source
@@ -26,6 +27,7 @@ export function useMemo<T>(
   } else {
     // The reason we don't share getters is
     // that we want to follow Vue's internal handling of specific values
+    // https://github.com/vuejs/core/blob/main/packages/runtime-core/src/apiWatch.ts#L212
     watch(source, (newest) => (memoRef.value = newest), {
       ...options,
       immediate: true

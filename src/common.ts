@@ -1,4 +1,5 @@
 import { isFunction } from '@vue/shared'
+
 import type { MaybeArray, ValueOf } from './types'
 
 export {
@@ -18,6 +19,8 @@ export {
   toTypeString,
   toRawType
 } from '@vue/shared'
+
+export const assign = Object.assign
 
 export function noop() {}
 
@@ -51,11 +54,25 @@ export function invokeIfFunction<T extends (...args: any[]) => any>(
 ): ReturnType<T>
 export function invokeIfFunction<
   T extends Exclude<any, (...args: any[]) => any>
->(fn: T, ...args: any[]): void
+>(fn: T, ...args: any[]): never
 export function invokeIfFunction(fn: unknown, ...args: any[]) {
   if (isFunction(fn)) {
     return fn(...args)
   }
+}
+
+export function getReturnIfFunction<T extends (...args: any[]) => any>(
+  fn: T,
+  ...args: Parameters<T>
+): ReturnType<T>
+export function getReturnIfFunction<
+  T extends Exclude<any, (...args: any[]) => any>
+>(fn: T, ...args: any[]): T
+export function getReturnIfFunction(fn: unknown, ...args: any[]) {
+  if (isFunction(fn)) {
+    return fn(...args)
+  }
+  return fn
 }
 
 export type PropertyName = string | number | symbol

@@ -4,7 +4,7 @@ import type {
   getCurrentInstance,
   PropType
 } from 'vue-demi'
-import { def, isArray, isFunction } from '@vue/shared'
+import { isArray, isFunction } from '@vue/shared'
 
 import { isHandlerKey, useListeners } from './listeners'
 import { cacheKeyofFunction } from './common'

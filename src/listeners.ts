@@ -232,6 +232,10 @@ export interface UseListenersReturn<Event extends string = string> {
     event: string,
     overrideOptions?: EmitterOptionsType
   ) => T
+  proxyIfExists: <T extends AnyHandler = AnyHandler>(
+    event: string,
+    overrideOptions?: EmitterOptionsType
+  ) => T | undefined
 }
 
 export const EMPTY_LISTENER_PROXY = () => {}
@@ -254,6 +258,11 @@ export function useListeners<Event extends string = string>(
 
   emit.withOptions = (options) => createEmit(options)
 
+  const proxyIfExists = <T extends AnyHandler = AnyHandler>(
+    event: string,
+    overrideOptions?: EmitterOptionsType
+  ) => getEmitIfHasListener<T>(context, event, overrideOptions ?? options)
+
   return {
     context,
     emit,
@@ -263,9 +272,10 @@ export function useListeners<Event extends string = string>(
       event: string,
       overrideOptions?: EmitterOptionsType
     ): T =>
-      getEmitIfHasListener(context, event, overrideOptions ?? options) ||
+      proxyIfExists<T>(event, overrideOptions) ||
       // Since Vue throws an error on the listener passed in as Nullable,
       // we return it when no listener exists.
-      (EMPTY_LISTENER_PROXY as T)
+      (EMPTY_LISTENER_PROXY as T),
+    proxyIfExists
   }
 }

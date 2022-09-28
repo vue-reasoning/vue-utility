@@ -1,5 +1,7 @@
 export * from './useControlledState'
+export * from './useEffect'
 export * from './useManualEffect'
 export * from './useMemo'
+export * from './useShadowComputed'
 export * from './useState'
 export * from './useTimeout'
