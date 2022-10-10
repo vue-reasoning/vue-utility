@@ -1,8 +1,8 @@
 import { computed, isRef, ref, watch } from 'vue-demi'
 import type { Ref, ComputedRef, WatchSource } from 'vue-demi'
 
-import type { MaybeRef } from '../types'
-import { useMemo } from './useMemo'
+import type { MaybeRef } from '../../../types'
+import { useMemo } from '../use-memo'
 
 export function useControlledState<T>(
   controlled: WatchSource<T>

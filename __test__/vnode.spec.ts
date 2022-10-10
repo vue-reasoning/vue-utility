@@ -5,7 +5,6 @@ import {
   isComment,
   isElement,
   mergeProps,
-  normalizeHandlerKeys,
   normalizeListenerKeys,
   normalizeListeners
 } from 'src'
@@ -40,19 +39,6 @@ describe('vnode > normalize', () => {
           [Function],
           [Function],
         ],
-      }
-    `))
-
-  test('normalizeHandlerKeys', () =>
-    expect(
-      normalizeHandlerKeys({
-        click: () => {},
-        'mouse-leave': () => {}
-      })
-    ).toMatchInlineSnapshot(`
-      {
-        "onClick": [Function],
-        "onMouse-leave": [Function],
       }
     `))
 

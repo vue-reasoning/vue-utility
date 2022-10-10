@@ -1,18 +1,20 @@
 import { computed, ref } from 'vue-demi'
 
+import { invokeIfFunction } from '../../../common'
+
 export function useTimeout(
-  fn: () => void,
+  fn?: () => void,
   timeout?: number,
   immediate = false
 ) {
   const timeoutIdRef = ref<NodeJS.Timeout | number>()
 
-  const createTimeout = (fn: () => void, timeout?: number) => {
+  const createTimeout = (fn?: () => void, timeout?: number) => {
     if (!timeout) {
-      fn()
+      invokeIfFunction(fn)
     } else {
       timeoutIdRef.value = setTimeout(() => {
-        fn()
+        invokeIfFunction(fn)
         clear()
       }, timeout)
     }
@@ -36,7 +38,7 @@ export function useTimeout(
     return clear
   }
 
-  const mesure = () => {
+  const ensure = () => {
     if (!timeoutIdRef.value) {
       createTimeout(fn, timeout)
     }
@@ -50,7 +52,11 @@ export function useTimeout(
     isPending: computed(() => !!timeoutIdRef.value),
     clear,
     reset,
-    mesure
+    ensure,
+    /**
+     * @deprecated typo
+     */
+    mesure: ensure
   }
 }
 

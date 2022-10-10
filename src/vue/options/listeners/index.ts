@@ -1,108 +1,22 @@
-import { isVue3, getCurrentInstance } from 'vue-demi'
-import { camelize, hyphenate, isOn as isHandlerKey } from '@vue/shared'
+import { getCurrentInstance, isVue3 } from 'vue-demi'
 
-export { camelize, hyphenate, isHandlerKey }
+import { isArray, noop } from '../../../common'
+import { parseEvent, toHandlerKey, upperFirst } from './to'
 
-/**
- * @example
- * ```ts
- * camelize('xxx') -> 'Xxx'
- * ```
- */
-export const upperFirst = (str: string) => {
-  return str.charAt(0).toUpperCase() + str.slice(1)
-}
-
-/**
- * @example
- * ```ts
- * camelize('ZZZ') -> 'zZZ'
- * ```
- */
-export const lowerFirst = (str: string) => {
-  return str.charAt(0).toLowerCase() + str.slice(1)
-}
-
-/**
- * Capitalize the first letter and add `'on'` at the top.
- *
- * @example
- * ```ts
- * toHandlerKey('eventTrigger') -> 'onEventTrigger'
- * ```
- */
-export const toHandlerKey = (event: string) => {
-  return event ? `on${upperFirst(event)}` : event
-}
-
-/**
- * Lowercase the first letter and remove the leading `'on'`.
- *
- * @example
- * ```ts
- * toListenerKey('onEventTrigger') -> 'eventTrigger'
- * ```
- */
-export function toListenerKey(event: string) {
-  if (isHandlerKey(event)) {
-    event = event.slice(2)
-    if (event.startsWith('-')) event = event.slice(1)
-    return lowerFirst(event)
-  }
-  return event
-}
-
-//
-// Event ==================================
-//
+export * from './is'
+export * from './to'
 
 type ExtractFunctionKeys<T> = {
   [K in keyof T]: T[K] extends Function ? K : never
 }[keyof T]
 
-function proxyFunction<
+export function proxyFunction<
   T extends Record<string, any>,
   K extends ExtractFunctionKeys<T>
->(host: T, emitKey: K): T[K] {
+>(source: T, emitKey: K): T[K] {
   return ((...args: Parameters<T[K]>) => {
-    return host[emitKey](...args)
+    return source[emitKey](...args)
   }) as T[K]
-}
-
-export interface EventParsed {
-  origin: string
-  camelize: string
-  hyphenate: string
-}
-
-const parsedCache = new Map<string, EventParsed>()
-
-/**
- * @example
- * ```ts
- * parseEvent('onCourierArrives') -> {
- *  origin:    'courierArrives', // like `toListenerKey`
- *  camelize:  'courierArrives',
- *  hyphenate: 'courier-arrives'
- * }
- * ```
- */
-export function parseEvent(event: string) {
-  if (parsedCache.has(event)) {
-    return parsedCache.get(event)!
-  }
-
-  const origin = toListenerKey(event)
-
-  if (parsedCache.has(origin)) {
-    return parsedCache.get(origin)!
-  }
-
-  return {
-    origin,
-    camelize: camelize(origin),
-    hyphenate: hyphenate(origin)
-  }
 }
 
 export type ComponentInternalInstance = Pick<
@@ -129,6 +43,12 @@ export type CompatListenerContext =
   | ListenerContext
   | Pick<CompatComponentPublicInstance, '$emit' | '$props' | '$listeners'>
 
+export function createListenerContext(
+  instance = getCurrentInstance()
+): ListenerContext | null {
+  return instance?.proxy ? normalizeListenerContext(instance.proxy) : null
+}
+
 function normalizeListenerContext(ctx: CompatListenerContext): ListenerContext {
   if ('emit' in ctx) {
     return ctx
@@ -139,16 +59,6 @@ function normalizeListenerContext(ctx: CompatListenerContext): ListenerContext {
     listeners: ctx.$listeners
   }
 }
-
-export function createListenerContext(
-  instance = getCurrentInstance()
-): ListenerContext | null {
-  return instance?.proxy ? normalizeListenerContext(instance.proxy) : null
-}
-
-type Handler = Function | Function[]
-
-type AnyHandler = (...args: any[]) => void
 
 export interface EmitterOptions {
   /**
@@ -163,6 +73,19 @@ export interface EmitterOptions {
 }
 
 export type EmitterOptionsType = boolean | EmitterOptions | null | undefined
+
+export type Handler = Function | Function[]
+
+export function normalizeHandler(...handlers: Array<Handler>) {
+  return handlers.reduce<Function[]>((normalized, handler) => {
+    if (handler && (isArray(handler) || !normalized.includes(handler))) {
+      return normalized.concat(handler).flat()
+    }
+    return normalized
+  }, [])
+}
+
+type AnyHandler = (...args: any[]) => void
 
 export function getEmitIfHasListener<T extends AnyHandler = AnyHandler>(
   ctx: CompatListenerContext,
@@ -196,7 +119,7 @@ export function getEmitIfHasListener<T extends AnyHandler = AnyHandler>(
 
   if (typeof handler === 'function') {
     return handler as T
-  } else if (Array.isArray(handler) && handler.length) {
+  } else if (isArray(handler) && handler.length) {
     return ((...args) =>
       (handler as Function[]).forEach((handler) => handler(...args))) as T
   }
@@ -238,8 +161,6 @@ export interface UseListenersReturn<Event extends string = string> {
   ) => T | undefined
 }
 
-export const EMPTY_LISTENER_PROXY = () => {}
-
 export function useListeners<Event extends string = string>(
   instance = getCurrentInstance(),
   options: EmitterOptionsType = true
@@ -275,7 +196,7 @@ export function useListeners<Event extends string = string>(
       proxyIfExists<T>(event, overrideOptions) ||
       // Since Vue throws an error on the listener passed in as Nullable,
       // we return it when no listener exists.
-      (EMPTY_LISTENER_PROXY as T),
+      (noop as T),
     proxyIfExists
   }
 }

@@ -1,6 +1,6 @@
-import type { Ref } from 'vue-demi'
+export * from './reactivity'
 
-export type MaybeRef<T> = T | Ref<T>
+export type PropertyName = string | number | symbol
 
 export type MaybeArray<T> = T | ReadonlyArray<T>
 

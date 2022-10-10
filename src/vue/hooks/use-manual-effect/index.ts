@@ -1,10 +1,10 @@
-import { invokeIfFunction } from '../common'
+import { invokeIfFunction, isFunction } from '../../../common'
 
 type OnCleanup = (cleanupFn: () => void) => void
 
 export type EffectCallback = (onCleanup: OnCleanup) => void | (() => void)
 
-export function useManualEffect(effect?: EffectCallback, immediate = false) {
+export function useManualEffect(callback?: EffectCallback, immediate = false) {
   let cleanup: (() => void) | undefined
   let state = 0
 
@@ -12,8 +12,8 @@ export function useManualEffect(effect?: EffectCallback, immediate = false) {
     cleanup = fn
   }
 
-  const executeEffect = (overrideEffect?: EffectCallback) => {
-    const maybeCleanup = invokeIfFunction(overrideEffect || effect, onCleanup)
+  const run = (override?: EffectCallback) => {
+    const maybeCleanup = invokeIfFunction(override || callback, onCleanup)
     if (!cleanup && maybeCleanup) {
       cleanup = maybeCleanup
     }
@@ -21,32 +21,34 @@ export function useManualEffect(effect?: EffectCallback, immediate = false) {
   }
 
   const clear = () => {
-    if (cleanup) {
-      cleanup()
-      cleanup = undefined
-    }
+    isFunction(cleanup) && cleanup()
+    cleanup = undefined
     state = 0
   }
 
-  const reset = (overrideFactory?: EffectCallback) => {
+  const reset = (override?: EffectCallback) => {
     clear()
-    executeEffect(overrideFactory)
+    run(override)
   }
 
-  const mesure = () => {
+  const ensure = () => {
     if (!state) {
-      executeEffect()
+      run()
     }
   }
 
   if (immediate) {
-    executeEffect()
+    run()
   }
 
   return {
     clear,
     reset,
-    mesure
+    ensure,
+    /**
+     * @deprecated typo
+     */
+    mesure: ensure
   }
 }
 

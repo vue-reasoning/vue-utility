@@ -1,9 +1,10 @@
 import { watch, watchEffect } from 'vue-demi'
 import type { WatchOptionsBase, WatchOptions, WatchStopHandle } from 'vue-demi'
 
-import type { Dependency } from './types'
-import { isEffectiveDependency } from './types'
-import { EffectCallback, useManualEffect } from './useManualEffect'
+import type { Dependency } from '../../../types'
+import { isValidDependency } from '../../../common'
+import { useManualEffect } from '../use-manual-effect'
+import type { EffectCallback } from '../use-manual-effect'
 
 // Accepts a function that contains imperative, possibly effectful code.
 // It's like a combination of `watch` and `watchEffect`,
@@ -33,12 +34,12 @@ export function useEffect(
 ): WatchStopHandle {
   const effectControl = useManualEffect(effect)
 
-  if (isEffectiveDependency(deps)) {
+  if (isValidDependency(deps)) {
     return watch(deps, () => effectControl.reset(), options)
   }
 
   return watchEffect((onCleanup) => {
-    effectControl.mesure()
+    effectControl.ensure()
     onCleanup(effectControl.clear)
   }, options)
 }

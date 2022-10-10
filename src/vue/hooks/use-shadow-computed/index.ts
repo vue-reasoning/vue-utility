@@ -1,11 +1,7 @@
-import {
-  computed,
-  ComputedRef,
-  DebuggerOptions,
-  WritableComputedRef
-} from 'vue-demi'
+import { computed, ComputedRef } from 'vue-demi'
+import type { DebuggerOptions, WritableComputedRef } from 'vue-demi'
 
-import { isFunction } from '../common'
+import { isFunction } from '../../../common'
 
 export type ShadowComputedGetter<T> = (shadow: T | null) => T
 export type ShadowComputedSetter<T> = (v: T) => void
@@ -15,7 +11,7 @@ export interface WritableShadowComputedOptions<T> {
   set: ShadowComputedSetter<T>
 }
 
-// It is almost the same as computed 
+// It is almost the same as computed
 // but caches the last value and passes it to the getter function.
 export function useShadowComputed<T>(
   getter: ShadowComputedGetter<T>,

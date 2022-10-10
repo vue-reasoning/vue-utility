@@ -1,6 +1,6 @@
 import { ref, Ref } from 'vue-demi'
 
-import { isFunction } from '../common'
+import { isFunction } from '../../../common'
 
 export function useState<T>(): Ref<T>
 export function useState<T>(
