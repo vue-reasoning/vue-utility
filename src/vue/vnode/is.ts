@@ -8,6 +8,7 @@ import {
   isComment as V2IsCommt,
   isText as V2IsText
 } from './is.v2'
+import { isDef } from '../../common'
 
 export function isElement(vnode: VNode) {
   return isVue3 ? !!(vnode.shapeFlag & ShapeFlags.ELEMENT) : V2IsElement(vnode)
@@ -34,5 +35,5 @@ export function isText(vnode: VNode) {
 export function hasArrayChildren(vnode: VNode) {
   return isVue3
     ? !!(vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN)
-    : !!vnode.children?.length
+    : isDef(vnode.children)
 }
