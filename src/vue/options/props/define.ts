@@ -40,9 +40,7 @@ import { cacheKeyofFunction } from '../../../common'
 export function createPropsFactory<T extends ComponentObjectPropsOptions>(
   props: T
 ) {
-  const getNormalizedProp = cacheKeyofFunction((prop: string) =>
-    normalizePropOptions(props[prop])
-  )
+  const getNormalizedProp = (prop: string) => normalizePropOptions(props[prop])
 
   return ((defaultProps) => {
     if (!defaultProps) {
@@ -106,18 +104,21 @@ export type WithDefaultProps<
       }
 }
 
-export const definePropType = <T>(type?: ResolveConstructor<T> | any[]) =>
-  type as PropType<T>
+export const definePropType = <T>(
+  type?: ResolvePropConstructor<T> | any[] | true | null
+) => type as PropType<T>
 
 export interface PropOptionsDefinition<T> {
-  type: T
+  type: PropType<T>
   required?: boolean
   default?: unknown
   isRequired: this & { required: true }
   def: <U = unknown>(value: U) => this & { default: U }
 }
 
-export const definePropOptions = <T>(type?: ResolveConstructor<T> | any[]) => {
+export const definePropOptions = <T>(
+  type?: ResolvePropConstructor<T> | any[] | true | null
+) => {
   const descriptors: PropertyDescriptorMap &
     ThisType<PropOptionsDefinition<T>> = {
     isRequired: {
@@ -140,7 +141,7 @@ export const definePropOptions = <T>(type?: ResolveConstructor<T> | any[]) => {
   )
 }
 
-type ResolveConstructor<T> = T extends string
+export type ResolvePropConstructor<T> = T extends string
   ? StringConstructor
   : T extends number
   ? NumberConstructor
