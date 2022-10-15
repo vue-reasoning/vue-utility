@@ -16,15 +16,3 @@ export function getWindow(node: Node | Window): Window & typeof globalThis {
 
   return node as Window & typeof globalThis
 }
-
-export function isHTMLElement(value: any): value is HTMLElement {
-  return value instanceof getWindow(value).HTMLElement
-}
-
-export function isElement(value: any): value is Element {
-  return value instanceof getWindow(value).Element
-}
-
-export function isNode(value: any): value is Node {
-  return value instanceof getWindow(value).Node
-}

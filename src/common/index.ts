@@ -1,6 +1,6 @@
 export * from './array'
 export * from './base'
-export * from './dom'
+export * from './window'
 export * from './function'
 export * from './identity'
 export * from './is'
