@@ -1,9 +1,13 @@
-import { computed, unref } from 'vue-demi'
-import type { ComputedRef, Ref } from 'vue-demi'
+import { computed } from 'vue-demi'
+import type { ComputedRef } from 'vue-demi'
+
+import type { ValueSource } from '../../types'
+import { resolveSourceValueGetter } from 'src/vue/reactivity'
 
 export function useTransformValue<T, U>(
-  inputValue: Ref<T>,
+  inputValue: ValueSource<T> | T,
   transform: (input: T) => U
 ): ComputedRef<U> {
-  return computed(() => transform(unref(inputValue)))
+  const getter = resolveSourceValueGetter(inputValue)
+  return computed(() => transform(getter()))
 }

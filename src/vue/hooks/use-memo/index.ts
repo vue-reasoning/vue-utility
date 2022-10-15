@@ -1,9 +1,8 @@
-import { watch, ref, readonly, unref } from 'vue-demi'
+import { watch, ref, readonly } from 'vue-demi'
 import type { WatchOptions } from 'vue-demi'
 
-import { isFunction } from '../../../common'
 import type { Dependency, ValueSource } from '../../types'
-import { isDependency } from '../../reactivity'
+import { isDependency, resolveSourceValueGetter } from '../../reactivity'
 
 export type useMemoOptions = Omit<WatchOptions, 'immediate'>
 
@@ -18,7 +17,7 @@ export function useMemo<T>(
   const memoRef = ref()
 
   if (isDependency(deps)) {
-    const getter = isFunction(source) ? source : () => unref(source)
+    const getter = resolveSourceValueGetter(source)
     watch(deps, () => (memoRef.value = getter()), {
       ...options,
       immediate: true

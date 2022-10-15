@@ -1,9 +1,9 @@
-import { ref, unref } from 'vue-demi'
+import { ref } from 'vue-demi'
 import type { Ref } from 'vue-demi'
 
-import { isFunction } from '../../common'
 import type { ValueSource } from '../types'
+import { resolveSourceValue } from './resolveSourceValue'
 
 export function resolveRef<T>(source: ValueSource<T> | T): Ref<T> {
-  return ref(isFunction(source) ? source() : unref(source)) as Ref<T>
+  return ref(resolveSourceValue(source)) as Ref<T>
 }

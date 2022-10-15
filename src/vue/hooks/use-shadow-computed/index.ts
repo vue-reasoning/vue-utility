@@ -39,7 +39,7 @@ export function useShadowComputed<T>(
         shadow = main
         return main
       },
-      set: setter as any // allow error reporting
+      set: setter as any // keep readonly state
     },
     debugOptions
   )

@@ -63,7 +63,9 @@ export type EmitterOptionsType = boolean | EmitterOptions | null | undefined
 
 export type Handler = Function | Function[]
 
-export function normalizeHandler(...handlers: Array<Handler>) {
+export function normalizeHandler(
+  ...handlers: Array<Handler | null | undefined>
+) {
   return handlers.reduce<Function[]>((normalized, handler) => {
     if (handler && (isArray(handler) || !normalized.includes(handler))) {
       return normalized.concat(handler).flat()
