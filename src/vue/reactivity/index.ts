@@ -1,2 +1,3 @@
 export * from './is'
-export * from './toComputed'
+export * from './resolveComputed'
+export * from './resolveRef'

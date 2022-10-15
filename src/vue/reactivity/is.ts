@@ -1,11 +1,18 @@
-import { isReactive, isRef, Ref } from 'vue-demi'
+import { isReactive, isReadonly, isRef } from 'vue-demi'
+import type { Ref } from 'vue-demi'
+
 import { isArray, isFunction } from '../../common'
 import type { Dependency } from '../types'
 
-export function isReactivity(v: any): v is Ref<any> {
-  return isRef(v) || isReactive(v)
+export function isWritableRef<T = unknown>(v: unknown): v is Ref<T> {
+  return isRef(v) && !isReadonly(v)
 }
 
 export function isDependency<T = unknown>(dep: unknown): dep is Dependency<T> {
-  return isReactivity(dep) || isFunction(dep) || (isArray(dep) && !!dep.length)
+  return (
+    isRef(dep) ||
+    isReactive(dep) ||
+    isFunction(dep) ||
+    (isArray(dep) && !!dep.length)
+  )
 }

@@ -1,47 +1,41 @@
-import { computed, isRef, ref, watch } from 'vue-demi'
-import type { Ref, ComputedRef, WatchSource } from 'vue-demi'
+import { computed } from 'vue-demi'
+import type { Ref, WritableComputedRef } from 'vue-demi'
 
-import type { MaybeRef } from '../../types'
+import type { MaybeRef, ValueSource } from '../../types'
 import { useMemo } from '../use-memo'
+import { useMergedState } from '../use-merged-state'
+import { useDerivedState } from '../use-derived-state'
+import { isWritableRef } from 'src/vue/reactivity'
 
 export function useControlledState<T>(
-  controlled: WatchSource<T>
+  controlled: ValueSource<T>
 ): [Ref<T>, Ref<T | undefined>]
 export function useControlledState<T>(
-  controlled: WatchSource<T>,
-  uncontrolled: MaybeRef<T>,
-  setter?: (value: T) => void
+  controlled: ValueSource<T>,
+  uncontrolled: MaybeRef<T | undefined>
 ): [Ref<T>, Ref<T>]
 export function useControlledState<T>(
-  controlled: WatchSource<T>,
-  uncontrolled?: MaybeRef<T>,
-  setter?: (value: T) => void
+  controlled: ValueSource<T>,
+  uncontrolled?: MaybeRef<T | undefined>
 ) {
   const controlledStateRef = useMemo(controlled)
-  const uncontrolledStateRef = ref()
+  const uncontrolledStateRef = useDerivedState(uncontrolled)
 
-  if (isRef(uncontrolled)) {
-    watch(
-      uncontrolled,
-      (uncontrolled) => (uncontrolledStateRef.value = uncontrolled),
-      {
-        immediate: true
-      }
-    )
-  } else {
-    uncontrolledStateRef.value = uncontrolled
-  }
+  const isWritable = isWritableRef(controlled)
 
-  const mergedStateRef = computed({
-    get: () =>
-      controlledStateRef.value === undefined
-        ? uncontrolledStateRef.value
-        : controlledStateRef.value,
-    set: (v) => {
-      uncontrolledStateRef.value = v as T
-      setter?.(v as T)
-    }
-  }) as ComputedRef<T>
-
-  return [mergedStateRef, uncontrolledStateRef]
+  return [
+    useMergedState(
+      computed({
+        get: () => controlledStateRef.value,
+        set: (v) => {
+          uncontrolledStateRef.value = v as T
+          if (isWritable) {
+            ;(controlled as WritableComputedRef<T>).value = v
+          }
+        }
+      }),
+      uncontrolledStateRef.value
+    ),
+    uncontrolledStateRef
+  ]
 }

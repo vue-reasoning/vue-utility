@@ -1,5 +1,6 @@
 export * from './array'
 export * from './base'
+export * from './dom'
 export * from './function'
 export * from './identity'
 export * from './is'
