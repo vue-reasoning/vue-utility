@@ -1,9 +1,11 @@
-import { inject, InjectionKey } from 'vue-demi'
+import { inject } from 'vue-demi'
+import type { InjectionKey } from 'vue-demi'
 
 export * from './hooks'
 export * from './options'
 export * from './reactivity'
 export * from './vnode'
+export * from './types'
 
 export function safeInject<T>(key: InjectionKey<T> | string): T | undefined {
   const EMPTY_VALUE = {} as any
