@@ -1,25 +1,12 @@
 import { getCurrentInstance, isVue3 } from 'vue-demi'
 
-import { isArray, noop } from '../../../common'
-import { parseEvent, toHandlerKey, upperFirst } from './to'
+import { isArray, noop, proxyFunction, upperFirst } from '../../../common'
+import { parseEvent, toHandlerKey } from './transform'
 
-export * from './is'
-export * from './to'
+export * from './isHandlerKey'
+export * from './transform'
 
-type ExtractFunctionKeys<T> = {
-  [K in keyof T]: T[K] extends Function ? K : never
-}[keyof T]
-
-export function proxyFunction<
-  T extends Record<string, any>,
-  K extends ExtractFunctionKeys<T>
->(source: T, emitKey: K): T[K] {
-  return ((...args: Parameters<T[K]>) => {
-    return source[emitKey](...args)
-  }) as T[K]
-}
-
-export type ComponentInternalInstance = Pick<
+type ComponentInternalInstance = Pick<
   NonNullable<ReturnType<typeof getCurrentInstance>>,
   'proxy'
 >

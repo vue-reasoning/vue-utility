@@ -1,6 +1,6 @@
 import { invokeIfFunction, isFunction } from '../../../common'
 
-type OnCleanup = (cleanupFn: () => void) => void
+export type OnCleanup = (cleanupFn: () => void) => void
 
 export type EffectCallback = (onCleanup: OnCleanup) => void | (() => void)
 
@@ -12,8 +12,8 @@ export function useManualEffect(callback?: EffectCallback, immediate = false) {
     cleanup = fn
   }
 
-  const run = (override?: EffectCallback) => {
-    const maybeCleanup = invokeIfFunction(override || callback, onCleanup)
+  const run = (callback?: EffectCallback) => {
+    const maybeCleanup = invokeIfFunction(callback, onCleanup)
     if (!cleanup && maybeCleanup) {
       cleanup = maybeCleanup
     }
@@ -28,17 +28,17 @@ export function useManualEffect(callback?: EffectCallback, immediate = false) {
 
   const reset = (override?: EffectCallback) => {
     clear()
-    run(override)
+    run(override ?? callback)
   }
 
   const ensure = () => {
     if (!state) {
-      run()
+      run(callback)
     }
   }
 
   if (immediate) {
-    run()
+    run(callback)
   }
 
   return {

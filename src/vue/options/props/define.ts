@@ -5,7 +5,6 @@ import type {
   ComponentObjectPropsOptions,
   NormalizePropsOption
 } from './normalize'
-import { cacheKeyofFunction } from '../../../common'
 
 /**
  * Create a factory function for props that can override their default props.

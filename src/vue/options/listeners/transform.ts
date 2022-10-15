@@ -1,29 +1,7 @@
 import { camelize, hyphenate } from '@vue/shared'
 
-import { cacheKeyofFunction } from '../../../common'
-import { isHandlerKey } from './is'
-
-export { camelize, hyphenate }
-
-/**
- * @example
- * ```ts
- * camelize('xxx') -> 'Xxx'
- * ```
- */
-export const upperFirst = (str: string) => {
-  return str.charAt(0).toUpperCase() + str.slice(1)
-}
-
-/**
- * @example
- * ```ts
- * camelize('ZZZ') -> 'zZZ'
- * ```
- */
-export const lowerFirst = (str: string) => {
-  return str.charAt(0).toLowerCase() + str.slice(1)
-}
+import { cacheKeyofFunction, lowerFirst, upperFirst } from '../../../common'
+import { isHandlerKey } from './isHandlerKey'
 
 /**
  * Capitalize the first letter and add `'on'` at the top.

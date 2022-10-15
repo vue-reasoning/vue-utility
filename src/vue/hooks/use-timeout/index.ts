@@ -3,20 +3,20 @@ import { computed, ref } from 'vue-demi'
 import { invokeIfFunction } from '../../../common'
 
 export function useTimeout(
-  fn?: () => void,
-  timeout?: number,
+  callback?: () => void,
+  ms?: number,
   immediate = false
 ) {
   const timeoutIdRef = ref<NodeJS.Timeout | number>()
 
-  const createTimeout = (fn?: () => void, timeout?: number) => {
-    if (!timeout) {
-      invokeIfFunction(fn)
+  const createTimeout = (callback?: () => void, ms?: number) => {
+    if (!ms) {
+      invokeIfFunction(callback)
     } else {
       timeoutIdRef.value = setTimeout(() => {
-        invokeIfFunction(fn)
+        invokeIfFunction(callback)
         clear()
-      }, timeout)
+      }, ms)
     }
   }
 
@@ -28,24 +28,24 @@ export function useTimeout(
     }
   }
 
-  const reset = (overrideFn?: () => void, overrideTimeout?: number) => {
+  const reset = (overrideCallback?: () => void, overrideMs?: number) => {
     clear()
 
-    const currentFn = overrideFn || fn
-    const currentTimeout = overrideTimeout ?? timeout
-    createTimeout(currentFn, currentTimeout)
+    const finalCallback = overrideCallback || callback
+    const finalMs = overrideMs ?? ms
 
+    createTimeout(finalCallback, finalMs)
     return clear
   }
 
   const ensure = () => {
     if (!timeoutIdRef.value) {
-      createTimeout(fn, timeout)
+      createTimeout(callback, ms)
     }
   }
 
   if (immediate) {
-    createTimeout(fn, timeout)
+    createTimeout(callback, ms)
   }
 
   return {

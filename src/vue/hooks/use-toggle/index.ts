@@ -1,20 +1,22 @@
-import { unref } from 'vue'
-import type { Ref } from 'vue'
+import { unref } from 'vue-demi'
+import type { Ref } from 'vue-demi'
 
-import type { MaybeRef } from '../../../types'
 import { useState } from '../use-state'
+import type { MaybeRef } from '../../types'
+import { safeIdentity } from '../../../common'
+import type { Fn, Getter, Setter } from '../../../common'
 
 export interface ToggleControl<T> {
-  set: (value: T) => void
-  setDefault: () => void
-  setReverse: () => void
-  toggle: () => void
+  set: Setter<T>
+  setDefault: Fn
+  setReverse: Fn
+  toggle: Fn
 }
 
 export function createToggleControl<T, U>(
   state: Ref<T | U>,
-  getDefaultValue: () => T,
-  getReverseValue: () => U
+  getDefaultValue: Getter<T>,
+  getReverseValue: Getter<U>
 ): ToggleControl<T | U> {
   return {
     set: (value) => (state.value = value),
@@ -29,7 +31,7 @@ export function createToggleControl<T, U>(
 }
 
 export function useToggle(
-  initialValue?: MaybeRef<any>
+  defaultValue?: MaybeRef<any>
 ): [Ref<boolean>, ToggleControl<boolean>]
 
 export function useToggle<T, U>(
@@ -41,19 +43,13 @@ export function useToggle<T, U>(
   defaultValue = false as unknown as MaybeRef<T>,
   reverseValue?: MaybeRef<U>
 ): [Ref<T | U>, ToggleControl<T | U>] {
-  const isBoolean = arguments.length <= 1
+  const asBoolean = arguments.length <= 1
+  const transform = asBoolean ? Boolean : safeIdentity
 
-  const getDefaultValue = () => {
-    const value = unref(defaultValue)
-    return isBoolean ? !!value : value
-  }
+  const getDefaultValue = () => transform(unref(defaultValue))
+  const getReverseValue = () => transform(unref(reverseValue))
 
-  const getReverseValue = () => {
-    const value = unref(reverseValue)
-    return isBoolean ? !!value : (value as U)
-  }
-
-  const stateRef = useState<T | U | boolean>(getDefaultValue, true)
+  const stateRef = useState(getDefaultValue)
 
   return [
     stateRef as Ref<T | U>,

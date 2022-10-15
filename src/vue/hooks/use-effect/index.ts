@@ -1,14 +1,18 @@
 import { watch, watchEffect } from 'vue-demi'
 import type { WatchOptionsBase, WatchOptions, WatchStopHandle } from 'vue-demi'
 
-import type { Dependency } from '../../../types'
-import { isValidDependency } from '../../../common'
+import type { Dependency } from '../../types'
 import { useManualEffect } from '../use-manual-effect'
 import type { EffectCallback } from '../use-manual-effect'
+import { isDependency } from '../../reactivity'
 
 // Accepts a function that contains imperative, possibly effectful code.
 // It's like a combination of `watch` and `watchEffect`,
-// but it allows you to clean up effects in `watch` like `watchEffect`
+// but it allows you to clean up effects in `watch` like `watchEffect`.
+
+/**
+ * Unlike normal `useEffect`, if `deps` is not passed in, we will collect all dependencies touched in the `source`
+ */
 
 // overload 1: no deps exists, or deps is a non-reactivity empty array
 // the effect will be used as a `watchEffect`
@@ -34,7 +38,7 @@ export function useEffect(
 ): WatchStopHandle {
   const effectControl = useManualEffect(effect)
 
-  if (isValidDependency(deps)) {
+  if (isDependency(deps)) {
     return watch(deps, () => effectControl.reset(), options)
   }
 

@@ -1,8 +1,9 @@
-import { ref } from 'vue'
-import type { Ref } from 'vue'
+import { ref } from 'vue-demi'
+import type { Ref } from 'vue-demi'
 
-import type { MaybeRef } from '../../../types'
 import { createToggleControl } from '../use-toggle'
+import type { MaybeRef } from '../../types'
+import { always, never } from '../../../common'
 
 export interface BooleanControl {
   set: (value: boolean) => void
@@ -12,12 +13,7 @@ export interface BooleanControl {
 }
 
 export function createBooleanControl(state: Ref<any>): BooleanControl {
-  const control = createToggleControl(
-    state,
-    () => true,
-    () => false
-  )
-
+  const control = createToggleControl(state, always, never)
   return {
     set: control.set,
     setTrue: control.setDefault,

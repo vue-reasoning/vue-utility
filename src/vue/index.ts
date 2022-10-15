@@ -2,6 +2,7 @@ import { inject, InjectionKey } from 'vue-demi'
 
 export * from './hooks'
 export * from './options'
+export * from './reactivity'
 export * from './vnode'
 
 export function safeInject<T>(key: InjectionKey<T> | string): T | undefined {

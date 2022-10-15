@@ -1,8 +1,8 @@
 import type { VNode } from 'vue'
 import { isVue3 } from 'vue-demi'
 
-import { isArray, isUndef } from '../../common'
-import type { MaybeArray } from '../../types'
+import { isUndef, toArray } from '../../common'
+import type { MaybeArray } from '../../common'
 import { hasArrayChildren } from './is'
 
 export type VNodeChildAtom =
@@ -43,7 +43,7 @@ export function forEachChildren(
     }
   }
 
-  each(isArray(vnode) ? vnode : [vnode])
+  each(toArray(vnode))
 }
 
 export function findChild<T extends VNodeChildAtom>(
