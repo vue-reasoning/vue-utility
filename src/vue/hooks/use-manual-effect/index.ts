@@ -1,4 +1,7 @@
+import { ref } from 'vue-demi'
+
 import { invokeIfFunction, isFunction } from '../../../common'
+import { useTransformValue } from '../use-transform-value'
 
 export type OnCleanup = (cleanupFn: () => void) => void
 
@@ -6,7 +9,7 @@ export type EffectCallback = (onCleanup: OnCleanup) => void | (() => void)
 
 export function useManualEffect(callback?: EffectCallback, immediate = false) {
   let cleanup: (() => void) | undefined
-  let state = 0
+  const stateRef = ref(0)
 
   const onCleanup: OnCleanup = (fn: () => void) => {
     cleanup = fn
@@ -17,13 +20,13 @@ export function useManualEffect(callback?: EffectCallback, immediate = false) {
     if (!cleanup && maybeCleanup) {
       cleanup = maybeCleanup
     }
-    state++
+    stateRef.value++
   }
 
   const clear = () => {
     isFunction(cleanup) && cleanup()
     cleanup = undefined
-    state = 0
+    stateRef.value = 0
   }
 
   const reset = (override?: EffectCallback) => {
@@ -32,7 +35,7 @@ export function useManualEffect(callback?: EffectCallback, immediate = false) {
   }
 
   const ensure = () => {
-    if (!state) {
+    if (!stateRef.value) {
       run(callback)
     }
   }
@@ -45,6 +48,7 @@ export function useManualEffect(callback?: EffectCallback, immediate = false) {
     clear,
     reset,
     ensure,
+    hasEffect: useTransformValue(stateRef, Boolean),
     /**
      * @deprecated typo
      */

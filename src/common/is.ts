@@ -13,6 +13,10 @@ export {
   toTypeString
 } from '@vue/shared'
 
+export function isNumber(v: any): v is number {
+  return typeof v === 'number'
+}
+
 export function isTrue(v: any): v is true {
   return v === true
 }
