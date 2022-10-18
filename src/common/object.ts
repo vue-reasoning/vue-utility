@@ -2,24 +2,27 @@ import { remove } from './array'
 import { cacheKeyofFunction } from './function'
 import type { MaybeArray, PropertyName, ValueOf } from './types'
 
-export { hasChanged, hasOwn, def } from '@vue/shared'
+export { hasOwn, def } from '@vue/shared'
 
 export const assign = Object.assign
+export const extend = assign
 
 export function mapKey<T extends object>(
   object: T | null | undefined,
   iteratee: (value: ValueOf<T>, key: keyof T, object: T) => keyof T
 ) {
   const result: Record<PropertyName, ValueOf<T>> = {}
-
   for (const key in object) {
     const value = object[key]
     result[iteratee(value, key, object) as keyof T] = value
   }
-
   return result
 }
 
+/**
+ * Creates an object composed of the object properties predicate returns truthy for.
+ * The predicate is invoked with two arguments: (value, key).
+ */
 export function pickBy<T extends object>(
   object: T,
   predicate: (value: ValueOf<T>, key: keyof T) => boolean
@@ -33,6 +36,9 @@ export function pickBy<T extends object>(
   return picks
 }
 
+/**
+ * Creates an object composed of the picked object properties.
+ */
 export function pick<T extends object, U extends keyof T>(
   object: T,
   ...props: Array<MaybeArray<U>>
@@ -50,6 +56,9 @@ export function pick<T extends object>(
   return pickBy(object, (_, key) => hasIn(key))
 }
 
+/**
+ * Creates an object composed of the own and inherited enumerable property paths of object that are not omitted.
+ */
 export function omit<T extends object, K extends PropertyName[]>(
   object: T,
   ...props: K

@@ -25,3 +25,10 @@ export function nth<T>(array: T[], i: number): T | undefined {
 export function last<T>(array: T[]): T | undefined {
   return nth(array, -1)
 }
+
+export function toTrueObj<T extends string>(strings: T[]) {
+  return strings.reduce((acc, str) => {
+    acc[str] = true
+    return acc
+  }, {} as Record<T, true>)
+}

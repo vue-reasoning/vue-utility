@@ -16,3 +16,7 @@ export function getWindow(node: Node | Window): Window & typeof globalThis {
 
   return node as Window & typeof globalThis
 }
+
+export function getDocument(node: Node) {
+  return node.ownerDocument ?? document
+}

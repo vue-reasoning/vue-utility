@@ -1,4 +1,4 @@
-import type { VNode } from 'vue'
+import type { VNode } from 'vue-demi'
 import { isVue3 } from 'vue-demi'
 
 import { isUndef, toArray } from '../../common'

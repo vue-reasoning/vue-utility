@@ -1,6 +1,10 @@
-import { camelize, hyphenate } from '@vue/shared'
-
-import { cacheKeyofFunction, lowerFirst, upperFirst } from '../../../common'
+import {
+  cacheKeyofFunction,
+  camelize,
+  hyphenate,
+  lowerFirst,
+  upperFirst
+} from '../../../common'
 import { isHandlerKey } from './isHandlerKey'
 
 /**

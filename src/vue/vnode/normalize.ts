@@ -1,9 +1,9 @@
-import { isArray, mapKey } from '../../common'
-
 import {
   normalizeClass as SharedNormalizeClass,
   normalizeStyle as SharedNormalizeStyle
 } from '@vue/shared'
+
+import { isArray, mapKey } from '../../common'
 import { isHandlerKey, normalizeHandler, toListenerKey } from '../options'
 
 export function normalizeClass(...classes: unknown[]): string {
