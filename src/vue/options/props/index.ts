@@ -4,6 +4,7 @@ import type { ComponentObjectPropsOptions } from './normalize'
 
 export * from './define'
 export * from './normalize'
+export * from './forwardListenerProps'
 
 export type ExtractPropsKeysByType<
   T extends ComponentObjectPropsOptions,

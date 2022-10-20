@@ -1,9 +1,18 @@
-import { ref } from 'vue-demi'
-import type { Ref } from 'vue-demi'
+import { ref, shallowRef } from 'vue-demi'
+import type { Ref, ShallowRef } from 'vue-demi'
 
 import type { ValueSource } from '../types'
 import { resolveSourceValue } from './resolveSourceValue'
 
-export function resolveRef<T>(source: ValueSource<T> | T): Ref<T> {
-  return ref(resolveSourceValue(source)) as Ref<T>
+export function resolveRef<T>(
+  source: ValueSource<T> | T,
+  shallow?: false
+): Ref<T>
+export function resolveRef<T>(
+  source: ValueSource<T> | T,
+  shallow: true
+): ShallowRef<T>
+export function resolveRef<T>(source: ValueSource<T> | T, shallow = false) {
+  const createRef = shallow ? shallowRef : ref
+  return createRef(resolveSourceValue(source))
 }
