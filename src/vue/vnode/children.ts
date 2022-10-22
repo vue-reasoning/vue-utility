@@ -1,9 +1,10 @@
 import type { VNode } from 'vue-demi'
 import { isVue3 } from 'vue-demi'
 
-import { isUndef, toArray } from '../../common'
+import { isObject, isUndef, toArray } from '../../common'
 import type { MaybeArray } from '../../common'
 import { hasArrayChildren } from './is'
+import { getVNodeElement } from './get'
 
 export type VNodeChildAtom =
   | VNode
@@ -68,4 +69,22 @@ export function findChild<T extends VNodeChildAtom = VNodeChildAtom>(
   })
 
   return ret
+}
+
+export function findFirstQualifiedChild(
+  vnode: MaybeArray<VNode> | undefined | null,
+  qualifier: (vnode: VNode) => boolean
+) {
+  return findChild<VNode>(vnode, (child) => isObject(child) && qualifier(child))
+}
+
+export function findFirstQualifiedElement<T extends Element>(
+  children: VNode[] | undefined | null,
+  qualifier: (element: Element) => boolean
+): T | null | undefined {
+  const child = findFirstQualifiedChild(children, (child) => {
+    const element = getVNodeElement(child)
+    return !!element && qualifier(element)
+  })
+  return child && getVNodeElement(child)
 }

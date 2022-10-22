@@ -13,15 +13,20 @@ export function toReturnValue(fn: unknown, ...args: any[]) {
   return isFunction(fn) ? fn(...args) : fn
 }
 
-export function invokeIfFunction<T>(
+export function invoke<T>(
   fn: T,
   ...args: any[]
 ): T extends (...args: any[]) => any ? ReturnType<T> : void
-export function invokeIfFunction(fn: unknown, ...args: unknown[]) {
+export function invoke(fn: unknown, ...args: unknown[]) {
   if (isFunction(fn)) {
     return fn(...args)
   }
 }
+
+/**
+ * @deprecated use invoke
+ */
+export const invokeIfFunction = invoke
 
 export function invokeCallbacks<T extends any[]>(
   callbacks: T,

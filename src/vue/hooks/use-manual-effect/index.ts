@@ -1,22 +1,27 @@
 import { ref } from 'vue-demi'
 
-import { invokeIfFunction, isFunction } from '../../../common'
+import { invoke, isDef, isFunction } from '../../../common'
 import { useTransformValue } from '../use-transform-value'
 
 export type OnCleanup = (cleanupFn: () => void) => void
 
-export type EffectCallback = (onCleanup: OnCleanup) => void | (() => void)
+export type EffectCallback = (
+  onCleanup: OnCleanup,
+  ...args: any[]
+) => void | (() => void)
 
-export function useManualEffect(callback?: EffectCallback, immediate = false) {
+export function useManualEffect(cb?: EffectCallback, immediate = false) {
+  let args: any[] = []
   let cleanup: (() => void) | undefined
+
   const stateRef = ref(0)
 
   const onCleanup: OnCleanup = (fn: () => void) => {
     cleanup = fn
   }
 
-  const run = (callback?: EffectCallback) => {
-    const maybeCleanup = invokeIfFunction(callback, onCleanup)
+  const run = () => {
+    const maybeCleanup = invoke(cb, onCleanup, ...args)
     if (!cleanup && maybeCleanup) {
       cleanup = maybeCleanup
     }
@@ -24,24 +29,29 @@ export function useManualEffect(callback?: EffectCallback, immediate = false) {
   }
 
   const clear = () => {
-    isFunction(cleanup) && cleanup()
+    invoke(cleanup)
     cleanup = undefined
     stateRef.value = 0
   }
 
-  const reset = (override?: EffectCallback) => {
+  const reset = (overrideCb?: EffectCallback, ...overrideArgs: any[]) => {
+    if (isDef(overrideCb)) {
+      cb = overrideCb
+      args = overrideArgs
+    }
+
     clear()
-    run(override ?? callback)
+    run()
   }
 
   const ensure = () => {
     if (!stateRef.value) {
-      run(callback)
+      run()
     }
   }
 
   if (immediate) {
-    run(callback)
+    run()
   }
 
   return {

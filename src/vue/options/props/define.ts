@@ -118,6 +118,10 @@ export interface PropOptionsDefinition<T> {
 export const definePropOptions = <T>(
   type?: ResolvePropConstructor<T> | any[] | true | null
 ) => {
+  const options = {
+    type: definePropType(type)
+  } as PropOptionsDefinition<T>
+
   const descriptors: PropertyDescriptorMap &
     ThisType<PropOptionsDefinition<T>> = {
     isRequired: {
@@ -134,10 +138,7 @@ export const definePropOptions = <T>(
     }
   }
 
-  return Object.defineProperties(
-    { type: definePropType(type) } as PropOptionsDefinition<T>,
-    descriptors
-  )
+  return Object.defineProperties(options, descriptors)
 }
 
 export type ResolvePropConstructor<T> = T extends string

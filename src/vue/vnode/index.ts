@@ -1,6 +1,5 @@
 export * from './children'
 export * from './cloneVNode'
-export * from './findFirstQualifiedChild'
 export * from './get'
 export * from './is'
 export * from './mergeProps'

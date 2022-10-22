@@ -1,49 +1,70 @@
 import { watch, watchEffect } from 'vue-demi'
-import type { WatchOptionsBase, WatchOptions, WatchStopHandle } from 'vue-demi'
+import type { WatchOptions, WatchStopHandle } from 'vue-demi'
 
-import type { Dependency } from '../../types'
+import type {
+  Dependency,
+  ResolveDependencySource,
+  Subscribeable
+} from '../../types'
 import { useManualEffect } from '../use-manual-effect'
-import type { EffectCallback } from '../use-manual-effect'
 import { isDependency } from '../../reactivity'
+
+export type EffectCallbackWithDependency<V = any, OV = any> = (
+  onCleanup: (cleanupFn: () => void) => void,
+  value: V,
+  oldValue: OV
+) => void | (() => void)
+
+type SurmiseOldValue<T, Immediate> = Immediate extends true ? T | undefined : T
 
 // Accepts a function that contains imperative, possibly effectful code.
 // It's like a combination of `watch` and `watchEffect`,
 // but it allows you to clean up effects in `watch` like `watchEffect`.
 
-/**
- * Unlike normal `useEffect`, if `deps` is not passed in, we will collect all dependencies touched in the `source`
- */
+// scene 1: If no deps exists, or deps is a non-reactivity empty array,
+// we will tracking its dependencies and re-runs it whenever the dependencies are changed.
 
-// overload 1: no deps exists, or deps is a non-reactivity empty array
-// the effect will be used as a `watchEffect`
-// https://vuejs.org/api/reactivity-core.html#watcheffect
-export function useEffect(
-  effect: EffectCallback,
-  deps?: undefined | null,
-  options?: WatchOptionsBase
-): WatchStopHandle
+// scene 2: If has deps, effect will only activate if the values in the deps list change
 
-// overload 2: effect will only activate if the values in the deps list change
-export function useEffect(
-  effect: EffectCallback,
-  deps: Dependency,
-  options?: WatchOptions
+// overload: for an exact array of multiple sources
+export function useEffect<
+  T extends Subscribeable[],
+  Immediate extends Readonly<boolean> = false
+>(
+  effect: EffectCallbackWithDependency<
+    ResolveDependencySource<T>,
+    SurmiseOldValue<ResolveDependencySource<T>, Immediate>
+  >,
+  deps?: [...T],
+  options?: WatchOptions<Immediate>
 ): WatchStopHandle
 
 // implementation
-export function useEffect(
-  effect: EffectCallback,
-  deps?: Dependency | undefined | null,
+export function useEffect<
+  T extends Dependency | undefined | null,
+  Immediate extends Readonly<boolean> = false
+>(
+  effect: EffectCallbackWithDependency<
+    ResolveDependencySource<T>,
+    SurmiseOldValue<ResolveDependencySource<T>, Immediate>
+  >,
+  deps?: T,
   options?: WatchOptions
 ): WatchStopHandle {
-  const effectControl = useManualEffect(effect)
+  const effectControl = useManualEffect()
 
   if (isDependency(deps)) {
-    return watch(deps, () => effectControl.reset(), options)
+    return watch(
+      deps,
+      (value, oldValue) => {
+        effectControl.reset(effect, value, oldValue)
+      },
+      options
+    )
   }
 
   return watchEffect((onCleanup) => {
-    effectControl.ensure()
+    effectControl.reset(effect, deps as T, deps)
     onCleanup(effectControl.clear)
   }, options)
 }
