@@ -1,22 +1,23 @@
-import { computed } from 'vue-demi'
-import type { Ref, WritableComputedRef } from 'vue-demi'
+import { computed, Ref } from 'vue-demi'
+import type { WritableComputedRef } from 'vue-demi'
 
 import type { MaybeRef, ValueSource } from '../../types'
 import { useMemo } from '../use-memo'
 import { useMergedState } from '../use-merged-state'
+import type { MergedState, MergedStateRef } from '../use-merged-state'
 import { useDerivedState } from '../use-derived-state'
-import { isWritableRef } from 'src/vue/reactivity'
+import { isWritableRef } from '../../reactivity'
 
-export function useControlledState<T>(
+export function useControlledState<T, U = undefined>(
   controlled: ValueSource<T>
-): [Ref<T>, Ref<T | undefined>]
-export function useControlledState<T>(
+): [MergedStateRef<T, U>, Ref<MergedState<T, U>>]
+export function useControlledState<T, U>(
   controlled: ValueSource<T>,
-  uncontrolled: MaybeRef<T | undefined>
-): [Ref<T>, Ref<T>]
-export function useControlledState<T>(
+  uncontrolled: MaybeRef<U>
+): [MergedStateRef<T, U>, Ref<U>]
+export function useControlledState<T, U>(
   controlled: ValueSource<T>,
-  uncontrolled?: MaybeRef<T | undefined>
+  uncontrolled?: MaybeRef<U>
 ) {
   const controlledStateRef = useMemo(controlled)
   const uncontrolledStateRef = useDerivedState(uncontrolled)
@@ -28,7 +29,7 @@ export function useControlledState<T>(
       computed({
         get: () => controlledStateRef.value,
         set: (v) => {
-          uncontrolledStateRef.value = v as T
+          uncontrolledStateRef.value = v
           if (isWritable) {
             ;(controlled as WritableComputedRef<T>).value = v
           }
@@ -37,5 +38,5 @@ export function useControlledState<T>(
       uncontrolledStateRef.value
     ),
     uncontrolledStateRef
-  ]
+  ] as const
 }
