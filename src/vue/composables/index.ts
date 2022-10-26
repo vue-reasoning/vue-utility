@@ -1,4 +1,5 @@
 export * from './use-boolean'
+export * from './use-context'
 export * from './use-controlled-state'
 export * from './use-derived-state'
 export * from './use-effect'
