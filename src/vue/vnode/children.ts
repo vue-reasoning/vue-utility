@@ -27,11 +27,12 @@ export function forEachChildren(
 
   const each = (children: VNode[]) => {
     for (const child of children) {
+      if (isBreaked) return
       if (isUndef(child)) continue
 
       callbackfn(child, breakEach)
-      if (isBreaked) return
 
+      if (isBreaked) return
       if (isVue3) {
         if (child.component?.subTree) {
           each([child.component.subTree])
@@ -71,11 +72,14 @@ export function findChild<T extends VNodeChildAtom = VNodeChildAtom>(
   return ret
 }
 
-export function findFirstQualifiedChild(
-  vnode: MaybeArray<VNode> | undefined | null,
-  qualifier: (vnode: VNode) => boolean
+export function findFirstQualifiedChild<T extends VNode>(
+  vnode: MaybeArray<T> | undefined | null,
+  qualifier: (vnode: T) => boolean
 ) {
-  return findChild<VNode>(vnode, (child) => isObject(child) && qualifier(child))
+  return findChild<T>(
+    vnode,
+    (child) => isObject(child) && qualifier(child as T)
+  )
 }
 
 export function findFirstQualifiedElement<T extends Element>(

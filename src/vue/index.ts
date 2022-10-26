@@ -1,7 +1,7 @@
 import { inject } from 'vue-demi'
 import type { InjectionKey } from 'vue-demi'
 
-export * from './hooks'
+export * from './composables'
 export * from './options'
 export * from './reactivity'
 export * from './vnode'

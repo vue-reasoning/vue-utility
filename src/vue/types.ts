@@ -10,7 +10,7 @@ export type Subscribeable<T = any> = ValueSource<T> | object
 
 export type Dependency<T = unknown> = MaybeArray<Subscribeable<T>>
 
-export type ResolveDependencySource<T> = T extends ValueSource[]
+export type ResolveDependencySource<T> = T extends any[]
   ? {
       [K in keyof T]: ResolveDependencySource<T[K]>
     }

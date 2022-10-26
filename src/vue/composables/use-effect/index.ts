@@ -1,8 +1,9 @@
-import { watch, watchEffect } from 'vue-demi'
+import { Ref, watch, watchEffect, WatchOptionsBase } from 'vue-demi'
 import type { WatchOptions, WatchStopHandle } from 'vue-demi'
 
 import type {
   Dependency,
+  MaybeRef,
   ResolveDependencySource,
   Subscribeable
 } from '../../types'
@@ -28,7 +29,7 @@ type SurmiseOldValue<T, Immediate> = Immediate extends true ? T | undefined : T
 
 // overload: for an exact array of multiple sources
 export function useEffect<
-  T extends Subscribeable[],
+  T extends any[],
   Immediate extends Readonly<boolean> = false
 >(
   effect: EffectCallbackWithDependency<
@@ -37,6 +38,13 @@ export function useEffect<
   >,
   deps?: [...T],
   options?: WatchOptions<Immediate>
+): WatchStopHandle
+
+// overload: no deps exists
+export function useEffect<T extends undefined | null>(
+  effect: EffectCallbackWithDependency<ResolveDependencySource<T>, T>,
+  deps?: T,
+  options?: WatchOptionsBase
 ): WatchStopHandle
 
 // implementation
@@ -49,7 +57,7 @@ export function useEffect<
     SurmiseOldValue<ResolveDependencySource<T>, Immediate>
   >,
   deps?: T,
-  options?: WatchOptions
+  options?: WatchOptions<Immediate>
 ): WatchStopHandle {
   const effectControl = useManualEffect()
 
