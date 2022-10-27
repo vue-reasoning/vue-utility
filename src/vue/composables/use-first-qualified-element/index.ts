@@ -8,16 +8,16 @@ export type ElementQualifier = (element: Element) => boolean
 
 const isRealElement = (element: Element) => element.nodeType === 1
 
-export function useFirstQualifiedElement(
+export function useFirstQualifiedElement<T extends Element>(
   instance = getCurrentInstance(),
   qualifier: MaybeRef<ElementQualifier> = isRealElement
 ) {
   const childRef = useFirstQualifiedChild(instance, (child) => {
-    const element = getVNodeElement(child)
+    const element = getVNodeElement<T>(child)
     return !!element && unref(qualifier)(element)
   })
 
   return computed(() =>
-    childRef.value ? getVNodeElement(childRef.value) : null
+    childRef.value ? getVNodeElement<T>(childRef.value) : null
   )
 }

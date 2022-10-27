@@ -33,12 +33,6 @@ export type PublicRequiredKeys<T> = {
     : never
 }[keyof T]
 
-type A = PublicRequiredKeys<{
-  a: {
-    required: true
-  }
-}>
-
 export type PublicOptionalKeys<T> = Exclude<keyof T, PublicRequiredKeys<T>>
 
 export type ExtractPublicPropTypes<T> = {

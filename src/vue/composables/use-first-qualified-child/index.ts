@@ -1,24 +1,32 @@
-import { getCurrentInstance, isVue3, onMounted, onUpdated, ref } from 'vue-demi'
-import type { VNode } from 'vue-demi'
+import {
+  getCurrentInstance,
+  isVue3,
+  onMounted,
+  onUpdated,
+  ref,
+  watch
+} from 'vue-demi'
+import type { Ref, VNode } from 'vue-demi'
 
 import type { MaybeRef } from '../../types'
 import { findFirstQualifiedChild } from '../../vnode'
-import { isDef } from '../../../common'
-import { useEffect } from '../use-effect'
+import { always } from '../../../common'
 import { useTick } from '../use-tick'
 
 export type ChildQualifier = (child: VNode) => boolean
 
-export function useFirstQualifiedChild(
+export function useFirstQualifiedChild<T extends VNode>(
   instance = getCurrentInstance(),
-  qualifier: MaybeRef<ChildQualifier>
+  qualifier: MaybeRef<ChildQualifier> = always
 ) {
-  const childRef = ref<VNode | null>(null)
+  const childRef = ref(null) as Ref<T | null>
+
+  const getRootChild = () =>
+    isVue3 ? instance?.vnode : (instance as any).proxy?.$vnode
 
   const updateChild = (qualifier: ChildQualifier) => {
-    const child = isVue3 ? instance?.vnode : (instance as any).proxy?.$vnode
-    const qualified = child && findFirstQualifiedChild(child, qualifier)
-    childRef.value = isDef(qualified) ? qualified : null
+    const child = getRootChild()
+    childRef.value = child ? findFirstQualifiedChild<T>(child, qualifier) : null
   }
 
   // we update the child after the component update
@@ -27,9 +35,14 @@ export function useFirstQualifiedChild(
   onMounted(trigger)
   onUpdated(trigger)
 
-  useEffect(
-    (_, [qualifier]) => updateChild(qualifier as ChildQualifier),
-    [qualifier, track]
+  watch(
+    [qualifier, track],
+    ([qualifier]) => {
+      updateChild(qualifier as ChildQualifier)
+    },
+    {
+      immediate: true
+    }
   )
 
   return childRef
