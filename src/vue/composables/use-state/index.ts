@@ -2,7 +2,7 @@ import { ref, shallowRef } from 'vue-demi'
 import type { Ref, ShallowRef } from 'vue-demi'
 
 import type { ValueSource } from '../../types'
-import { resolveSourceValue } from 'src/vue/reactivity'
+import { resolveSourceValue } from '../../reactivity'
 
 export function useState<T>(): Ref<T | undefined>
 export function useState<T>(

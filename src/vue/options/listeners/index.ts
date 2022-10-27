@@ -1,6 +1,12 @@
 import { getCurrentInstance, isVue3 } from 'vue-demi'
 
-import { isArray, noop, proxyFunction, upperFirst } from '../../../common'
+import {
+  hasOwn,
+  isArray,
+  noop,
+  proxyFunction,
+  upperFirst
+} from '../../../common'
 import { parseEvent, toHandlerKey } from './transform'
 
 export * from './isHandlerKey'
@@ -43,7 +49,7 @@ function normalizeListenerContext(ctx: CompatListenerContext): ListenerContext {
   return {
     emit: proxyFunction(ctx, '$emit'),
     props: ctx.$props,
-    listeners: ctx.$listeners
+    listeners: hasOwn(ctx, '$listeners') ? ctx.$listeners : ctx.$props
   }
 }
 

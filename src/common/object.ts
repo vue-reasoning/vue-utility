@@ -19,6 +19,10 @@ export function mapKey<T extends object>(
   return result
 }
 
+export function objectKeys<T extends object>(object: T) {
+  return Object.keys(object) as Array<keyof T>
+}
+
 /**
  * Creates an object composed of the object properties predicate returns truthy for.
  * The predicate is invoked with two arguments: (value, key).
