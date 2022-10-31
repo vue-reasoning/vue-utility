@@ -13,6 +13,6 @@ export function isDependency<T = unknown>(dep: unknown): dep is Dependency<T> {
     isRef(dep) ||
     isReactive(dep) ||
     isFunction(dep) ||
-    (isArray(dep) && !!dep.length)
+    (isArray(dep) && dep.every(isDependency))
   )
 }

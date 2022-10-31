@@ -1,14 +1,10 @@
-import { Ref, watch, watchEffect, WatchOptionsBase } from 'vue-demi'
-import type { WatchOptions, WatchStopHandle } from 'vue-demi'
+import { watch, watchEffect } from 'vue-demi'
+import type { WatchOptions, WatchOptionsBase, WatchStopHandle } from 'vue-demi'
 
-import type {
-  Dependency,
-  MaybeRef,
-  ResolveDependencySource,
-  Subscribeable
-} from '../../types'
+import type { Dependency, ResolveDependencySource } from '../../types'
 import { useManualEffect } from '../use-manual-effect'
 import { isDependency } from '../../reactivity'
+import { omit } from '../../../common'
 
 export type EffectCallbackWithDependency<V = any, OV = any> = (
   onCleanup: (cleanupFn: () => void) => void,
@@ -74,5 +70,5 @@ export function useEffect<
   return watchEffect((onCleanup) => {
     effectControl.reset(effect, deps as T, deps)
     onCleanup(effectControl.clear)
-  }, options)
+  }, options && omit(options, 'immediate'))
 }

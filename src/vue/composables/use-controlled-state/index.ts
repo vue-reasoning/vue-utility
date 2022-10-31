@@ -19,11 +19,9 @@ export function useControlledState<T, U>(
   controlled: ValueSource<T>,
   uncontrolled?: MaybeRef<U>
 ) {
+  const isWritable = isWritableRef(controlled)
   const controlledStateRef = useMemo(controlled)
   const uncontrolledStateRef = useDerivedState(uncontrolled)
-
-  const isWritable = isWritableRef(controlled)
-
   return [
     useMergedState(
       computed({
@@ -35,7 +33,7 @@ export function useControlledState<T, U>(
           }
         }
       }),
-      uncontrolledStateRef.value
+      uncontrolledStateRef
     ),
     uncontrolledStateRef
   ] as const

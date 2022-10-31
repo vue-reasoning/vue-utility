@@ -1,8 +1,12 @@
-import { watch, ref, readonly } from 'vue-demi'
+import { watch, ref } from 'vue-demi'
 import type { WatchOptions } from 'vue-demi'
 
 import type { Dependency, ValueSource } from '../../types'
-import { isDependency, resolveSourceValueGetter } from '../../reactivity'
+import {
+  isDependency,
+  resolveComputed,
+  resolveSourceValueGetter
+} from '../../reactivity'
 
 export type useMemoOptions = Omit<WatchOptions, 'immediate'>
 
@@ -29,5 +33,5 @@ export function useMemo<T>(
     })
   }
 
-  return readonly(memoRef)
+  return resolveComputed(memoRef)
 }

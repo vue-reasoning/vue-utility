@@ -1,8 +1,13 @@
 import { computed } from 'vue-demi'
 import type { WritableComputedRef } from 'vue-demi'
 
-import { isWritableRef, resolveComputed, resolveRef } from '../../reactivity'
+import {
+  isWritableRef,
+  resolveComputed,
+  resolveSourceValueGetter
+} from '../../reactivity'
 import type { ValueSource } from '../../types'
+import { noop } from '../../../common'
 
 type NonUndef<T> = T extends undefined ? never : T
 
@@ -25,15 +30,17 @@ export function useMergedState<T, U>(
   defaultValue?: ValueSource<U> | U
 ) {
   const isWritable = isWritableRef(source)
-  const sourceRef = isWritable ? source : resolveRef(source)
-  const defaultValueRef = resolveComputed(defaultValue)
+  const getSource = resolveSourceValueGetter(source)
+  const getDefaultValue = resolveSourceValueGetter(defaultValue)
   return computed({
     get: () => {
-      const { value: source } = sourceRef
-      return source === undefined ? defaultValueRef.value : source
+      const source = getSource()
+      return source === undefined ? getDefaultValue() : source
     },
-    set: (value) => {
-      ;(sourceRef as any).value = value
-    }
+    set: isWritable
+      ? (value) => {
+          ;(source as any).value = value
+        }
+      : noop
   })
 }

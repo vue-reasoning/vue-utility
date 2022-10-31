@@ -20,7 +20,9 @@ export interface UseListenerForwardReturn<
   K extends keyof T = ExtractListenerPropKeys<T>
 > {
   props: Pick<T, K>
-  forwards: () => Required<ExtractPropTypes<Pick<T, K>>>
+  forwards: (
+    instance?: ReturnType<typeof getCurrentInstance>
+  ) => Required<ExtractPropTypes<Pick<T, K>>>
 }
 
 /**
@@ -72,9 +74,8 @@ export function createListenerPropsForwarder<
       return forwardProps
     }, {} as Pick<T, K>),
 
-    forwards: (instance?: ReturnType<typeof getCurrentInstance>) => {
+    forwards: (instance) => {
       const listeners = useListeners(instance, true)
-
       return listenerKeys.reduce((forwards, key) => {
         forwards[key as keyof typeof forwards] = listeners.proxy(key) as any
         return forwards

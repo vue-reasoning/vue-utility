@@ -53,7 +53,7 @@ export function convertLegacyProps(legacyProps: Record<string, any>) {
   return converted
 }
 
-function convertLegacyEventKey(event: string): string {
+export function convertLegacyEventKey(event: string): string {
   // normalize v2 event prefixes
   if (event[0] === '&') {
     event = event.slice(1) + 'Passive'

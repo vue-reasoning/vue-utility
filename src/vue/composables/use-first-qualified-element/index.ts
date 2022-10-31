@@ -13,7 +13,7 @@ export function useFirstQualifiedElement<T extends Element>(
   qualifier: MaybeRef<ElementQualifier> = isRealElement
 ) {
   const childRef = useFirstQualifiedChild(instance, (child) => {
-    const element = getVNodeElement<T>(child)
+    const element = child && getVNodeElement<T>(child)
     return !!element && unref(qualifier)(element)
   })
 

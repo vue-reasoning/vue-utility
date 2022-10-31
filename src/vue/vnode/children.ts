@@ -16,7 +16,7 @@ export type VNodeChildAtom =
   | void
 
 export function forEachChildren(
-  vnode: MaybeArray<VNode> | undefined | null,
+  vnode: MaybeArray<VNode | undefined | null>,
   callbackfn: (child: VNodeChildAtom, breakEach: () => void) => void
 ) {
   if (!vnode) return
@@ -25,14 +25,20 @@ export function forEachChildren(
 
   const breakEach = () => (isBreaked = true)
 
-  const each = (children: VNode[]) => {
+  const each = (children: Array<VNode | undefined | null>) => {
     for (const child of children) {
-      if (isBreaked) return
-      if (isUndef(child)) continue
+      if (isBreaked) {
+        return
+      }
+      if (isUndef(child)) {
+        continue
+      }
 
       callbackfn(child, breakEach)
+      if (isBreaked) {
+        return
+      }
 
-      if (isBreaked) return
       if (isVue3) {
         if (child.component?.subTree) {
           each([child.component.subTree])
@@ -49,15 +55,15 @@ export function forEachChildren(
 }
 
 export function findChild<T extends VNodeChildAtom>(
-  vnode: MaybeArray<VNode> | undefined | null,
+  vnode: MaybeArray<VNode | undefined | null>,
   predicate: (child: VNodeChildAtom) => child is T
 ): T | null
 export function findChild<T extends VNodeChildAtom>(
-  vnode: MaybeArray<VNode> | undefined | null,
+  vnode: MaybeArray<VNode | undefined | null>,
   predicate: (child: VNodeChildAtom) => boolean
 ): T | null
 export function findChild<T extends VNodeChildAtom = VNodeChildAtom>(
-  vnode: MaybeArray<VNode> | undefined | null,
+  vnode: MaybeArray<VNode | undefined | null>,
   predicate: (child: VNodeChildAtom) => boolean
 ): T | null {
   let ret: T | null = null
@@ -73,7 +79,7 @@ export function findChild<T extends VNodeChildAtom = VNodeChildAtom>(
 }
 
 export function findFirstQualifiedChild<T extends VNode>(
-  vnode: MaybeArray<T> | undefined | null,
+  vnode: MaybeArray<T | undefined | null>,
   qualifier: (vnode: T) => boolean
 ) {
   return findChild<T>(
@@ -83,7 +89,7 @@ export function findFirstQualifiedChild<T extends VNode>(
 }
 
 export function findFirstQualifiedElement<T extends Element>(
-  children: VNode[] | undefined | null,
+  children: MaybeArray<VNode | undefined | null>,
   qualifier: (element: Element) => boolean
 ): T | null | undefined {
   const child = findFirstQualifiedChild(children, (child) => {

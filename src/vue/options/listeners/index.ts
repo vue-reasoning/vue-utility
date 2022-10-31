@@ -7,9 +7,11 @@ import {
   proxyFunction,
   upperFirst
 } from '../../../common'
-import { parseEvent, toHandlerKey } from './transform'
+import { parseEventName } from './parse'
+import { toHandlerKey } from './transform'
 
 export * from './isHandlerKey'
+export * from './parse'
 export * from './transform'
 
 type ComponentInternalInstance = Pick<
@@ -39,7 +41,11 @@ export type CompatListenerContext =
 export function createListenerContext(
   instance = getCurrentInstance()
 ): ListenerContext | null {
-  return instance?.proxy ? normalizeListenerContext(instance.proxy) : null
+  return instance
+    ? isVue3
+      ? normalizeListenerContext(instance)
+      : instance.proxy && normalizeListenerContext(instance.proxy)
+    : null
 }
 
 function normalizeListenerContext(ctx: CompatListenerContext): ListenerContext {
@@ -88,7 +94,7 @@ export function getEmitIfHasListener<T extends AnyHandler = AnyHandler>(
   options?: EmitterOptionsType
 ): T | undefined {
   const context = normalizeListenerContext(ctx)
-  const parsed = parseEvent(event)
+  const parsed = parseEventName(event)
 
   let handler: Handler | undefined
   let props: Record<string, any> | undefined
