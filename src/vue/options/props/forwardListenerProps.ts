@@ -1,6 +1,7 @@
 import type { ExtractPropTypes, getCurrentInstance } from 'vue-demi'
 
-import { isHandlerKey, useListeners } from '../listeners'
+import { useListeners } from '../../composables'
+import { isHandlerKey } from '../listeners'
 import type { ComponentObjectPropsOptions } from './normalize'
 
 export type ExtractListenerPropKeys<T extends ComponentObjectPropsOptions> = {

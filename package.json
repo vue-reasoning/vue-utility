@@ -5,15 +5,16 @@
   "files": [
     "dist"
   ],
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
-    }
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
+    },
+    "./*": "./*"
   },
   "scripts": {
     "dev": "tsup --watch",
@@ -30,6 +31,10 @@
   ],
   "author": "nooooooom <https://github.com/nooooooom>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vue-reasoning/vue-utility.git"
+  },
   "dependencies": {
     "@vue/shared": "^3.2.7",
     "vue-demi": "*"
