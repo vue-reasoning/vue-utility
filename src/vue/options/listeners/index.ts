@@ -1,71 +1,12 @@
 import { getCurrentInstance, isVue3 } from 'vue-demi'
 
-import { hasOwn, isArray, proxyFunction, upperFirst } from '../../../common'
-import { parseEventName } from './parse'
-import { toHandlerKey } from './transform'
+import { camelize, hyphenate, invokeCallbacks, isArray } from '../../../common'
+import { isHandlerKey } from './isHandlerKey'
+import { toHandlerKey, toListenerKey } from './transform'
 
 export * from './isHandlerKey'
 export * from './parse'
 export * from './transform'
-
-type ComponentInternalInstance = Pick<
-  NonNullable<ReturnType<typeof getCurrentInstance>>,
-  'proxy'
->
-
-interface LegacyComponentInstanceParital {
-  $listeners?: Record<string, Function | Function[]>
-}
-
-type CompatComponentPublicInstance = NonNullable<
-  ComponentInternalInstance['proxy']
-> &
-  LegacyComponentInstanceParital
-
-export type ListenerContext = {
-  emit: CompatComponentPublicInstance['$emit']
-  props: CompatComponentPublicInstance['$props']
-  listeners?: Record<string, Function | Function[]>
-}
-
-export type CompatListenerContext =
-  | ListenerContext
-  | Pick<CompatComponentPublicInstance, '$emit' | '$props' | '$listeners'>
-
-export function createListenerContext(
-  instance = getCurrentInstance()
-): ListenerContext | null {
-  return instance
-    ? isVue3
-      ? normalizeListenerContext(instance)
-      : instance.proxy && normalizeListenerContext(instance.proxy)
-    : null
-}
-
-function normalizeListenerContext(ctx: CompatListenerContext): ListenerContext {
-  if ('emit' in ctx) {
-    return ctx
-  }
-  return {
-    emit: proxyFunction(ctx, '$emit'),
-    props: ctx.$props,
-    listeners: hasOwn(ctx, '$listeners') ? ctx.$listeners : ctx.$props
-  }
-}
-
-export interface EmitterOptions {
-  /**
-   * Whether to ignore the event format.
-   *
-   * If it is true, it will use the `caramelize` and `hyphenate` forms  to match.
-   * Otherwise, it will use the form after eliminating the on.
-   *
-   * @default false
-   */
-  ignoreFormat?: boolean
-}
-
-export type EmitterOptionsType = boolean | EmitterOptions | null | undefined
 
 export type Handler = Function | Function[]
 
@@ -80,61 +21,61 @@ export function normalizeHandler(
   }, [])
 }
 
-export type AnyHandler = (...args: any[]) => void
+export type AnyHandler = (event: string, ...args: any[]) => void
 
-export function getEmitIfHasListener<T extends AnyHandler = AnyHandler>(
-  ctx: CompatListenerContext,
+/**
+ * @param ignoreFormat Whether to ignore the event format.
+ * If it is true, it will use the `caramelize` and `hyphenate` forms  to match.
+ */
+export function getHandler<T extends AnyHandler = AnyHandler>(
+  instance = getCurrentInstance(),
   event: string,
-  options?: EmitterOptionsType
-): T | undefined {
-  const context = normalizeListenerContext(ctx)
-  const parsed = parseEventName(event)
-
-  let handler: Handler | undefined
-  let props: Record<string, any> | undefined
-
-  if (isVue3 && (props = context.props)) {
-    handler =
-      props[toHandlerKey(parsed.origin)] ||
-      props[toHandlerKey(parsed.camelize)] ||
-      props[toHandlerKey(upperFirst(parsed.hyphenate))]
+  ignoreFormat = true
+) {
+  if (!instance) {
+    return null
   }
 
-  if (!handler && (props = context.listeners)) {
-    handler = props[parsed.origin]
-    // ignore formatting
-    const ignoreFormat = !!(typeof options === 'boolean'
-      ? options
-      : options?.ignoreFormat)
-    if (
-      ignoreFormat &&
-      (!handler || (Array.isArray(handler) && handler.length === 0))
-    ) {
-      handler = props[parsed.camelize] || props[upperFirst(parsed.hyphenate)]
-    }
+  let handler: T | T[] | undefined
+  let props: Record<string, any> | null
+
+  if (isVue3) {
+    props = instance.vnode.props
+    event = isHandlerKey(event) ? event : toHandlerKey(event)
+  } else {
+    props = (instance.proxy as any).$listeners
+    event = toListenerKey(event)
   }
 
-  if (typeof handler === 'function') {
-    return handler as T
-  } else if (isArray(handler) && handler.length) {
-    return ((...args) =>
-      (handler as Function[]).forEach((handler) => handler(...args))) as T
+  if (!props) {
+    return null
   }
+
+  handler = props[event]
+  if (!handler && ignoreFormat) {
+    handler = props[camelize(event)] || props[hyphenate(event)]
+  }
+
+  return handler
+    ? isArray(handler) && handler.length
+      ? (invokeCallbacks as any).bind(null, handler)
+      : handler
+    : null
 }
 
 export function hasListener(
-  ctx: CompatListenerContext,
+  instance = getCurrentInstance(),
   event: string,
-  options?: EmitterOptionsType
+  ignoreFormat = true
 ) {
-  return !!getEmitIfHasListener(ctx, event, options)
+  return !!getHandler(instance, event, ignoreFormat)
 }
 
 export function emitListener(
-  ctx: CompatListenerContext,
+  instance = getCurrentInstance(),
   event: string,
-  options?: EmitterOptionsType,
+  ignoreFormat = true,
   ...args: any[]
 ) {
-  getEmitIfHasListener(ctx, event, options)?.(...args)
+  getHandler(instance, event, ignoreFormat)?.(...args)
 }

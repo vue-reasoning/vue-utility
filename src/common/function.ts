@@ -1,5 +1,5 @@
-import { isFunction } from './is'
-import type { PropertyName } from './types'
+import { isArray, isFunction } from './is'
+import type { AnyFunction, PropertyName } from './types'
 
 export function toReturnValue<T extends (...args: any[]) => any>(
   fn: T,
@@ -13,14 +13,25 @@ export function toReturnValue(fn: unknown, ...args: any[]) {
   return isFunction(fn) ? fn(...args) : fn
 }
 
+export type ExtractFunctionReturn<T> = T extends AnyFunction
+  ? ReturnType<T>
+  : void
+
 export function invoke<T>(
   fn: T,
   ...args: any[]
-): T extends (...args: any[]) => any ? ReturnType<T> : void
-export function invoke(fn: unknown, ...args: unknown[]) {
-  if (isFunction(fn)) {
-    return fn(...args)
-  }
+): T extends AnyFunction
+  ? ExtractFunctionReturn<T>
+  : T extends Readonly<Array<any>>
+  ? {
+      [K in keyof T]: ExtractFunctionReturn<T[K]>
+    }
+  : void {
+  return isFunction(fn)
+    ? fn(...args)
+    : isArray(fn)
+    ? fn.map((fn) => invoke(fn))
+    : undefined
 }
 
 /**
@@ -32,7 +43,7 @@ export function invokeCallbacks<T extends any[]>(
   callbacks: T,
   ...args: Parameters<T[number]>
 ) {
-  callbacks.forEach((cb) => cb(...args))
+  invoke(callbacks, ...args)
 }
 
 export function cacheKeyofFunction<T extends PropertyName, U = any>(

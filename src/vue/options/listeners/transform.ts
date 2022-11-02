@@ -10,7 +10,7 @@ import { isHandlerKey } from './isHandlerKey'
  * ```
  */
 export const toHandlerKey = cacheKeyofFunction((event: string) => {
-  return event ? `on${upperFirst(event)}` : event
+  return event ? `on${upperFirst(event)}` : ''
 })
 
 /**

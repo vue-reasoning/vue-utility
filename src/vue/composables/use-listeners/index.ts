@@ -1,70 +1,69 @@
-import { getCurrentInstance } from 'vue-demi'
+import { getCurrentInstance, onUpdated } from 'vue-demi'
 
-import { noop } from '../../../common'
-import {
-  createListenerContext,
-  emitListener,
-  getEmitIfHasListener,
-  hasListener,
-  ListenerContext
-} from '../../options'
-import type { AnyHandler, EmitterOptionsType } from '../../options'
+import { emitListener, getHandler, hasListener } from '../../options'
+import type { AnyHandler } from '../../options'
+import { useTick } from '../use-tick'
 
-export interface UseListenersReturn<Event extends string = string> {
-  context: ListenerContext
+export interface UseListenersReturn {
   emit: {
-    (event: Event, ...args: any[]): void
+    (event: string, ...args: any[]): void
     withOptions: (
-      overrideOptions?: EmitterOptionsType
-    ) => (event: Event, ...args: any[]) => void
+      ignoreFormat?: boolean
+    ) => (event: string, ...args: any[]) => void
   }
-  has: (event: Event, overrideOptions?: EmitterOptionsType) => boolean
+  has: (event: string, ignoreFormat?: boolean) => boolean
   proxy: <T extends AnyHandler = AnyHandler>(
     event: string,
-    overrideOptions?: EmitterOptionsType
+    ignoreFormat?: boolean
   ) => T
   proxyIfExists: <T extends AnyHandler = AnyHandler>(
     event: string,
-    overrideOptions?: EmitterOptionsType
+    ignoreFormat?: boolean
   ) => T | undefined
 }
 
-export function useListeners<Event extends string = string>(
+export function useListeners(
   instance = getCurrentInstance(),
-  options: EmitterOptionsType = true
-): UseListenersReturn<Event> {
-  const context = createListenerContext(instance!)
-  if (!context) {
+  ignoreFormat = true
+): UseListenersReturn {
+  if (!instance) {
     throw Error('useListenerContext() called without active instance.')
   }
 
-  const createEmit =
-    (overrideOptions?: EmitterOptionsType) =>
-    (event: Event, ...args: any[]) =>
-      emitListener(context, event, overrideOptions ?? options, ...args)
+  const [track, trigger] = useTick()
 
-  const emit = createEmit() as UseListenersReturn<Event>['emit']
+  onUpdated(trigger, instance)
+
+  const createEmit =
+    (_ignoreFormat = ignoreFormat) =>
+    (event: string, ...args: any[]) =>
+      emitListener(instance, event, _ignoreFormat, ...args)
+
+  const emit = createEmit() as UseListenersReturn['emit']
 
   emit.withOptions = (options) => createEmit(options)
 
-  const proxyIfExists = <T extends AnyHandler = AnyHandler>(
-    event: string,
-    overrideOptions?: EmitterOptionsType
-  ) => getEmitIfHasListener<T>(context, event, overrideOptions ?? options)
-
   return {
-    context,
     emit,
-    has: (event, overrideOptions) =>
-      hasListener(context, event, overrideOptions ?? options),
+
+    has: (event, _ignoreFormat = ignoreFormat) => {
+      track()
+      return hasListener(instance, event, _ignoreFormat)
+    },
+
     proxy: <T extends AnyHandler = AnyHandler>(
       event: string,
-      overrideOptions?: EmitterOptionsType
+      _ignoreFormat = ignoreFormat
     ): T =>
-      proxyIfExists<T>(event, overrideOptions) ||
-      // Since Vue throws an error on the listener passed in as Nullable,
-      // we return it when no listener exists.
-      (noop as T),
-    proxyIfExists
+      ((...args: any[]) =>
+        emitListener(instance, event, _ignoreFormat, ...args)) as T,
+
+    proxyIfExists: <T extends AnyHandler = AnyHandler>(
+      event: string,
+      _ignoreFormat = ignoreFormat
+    ) => {
+      track()
+      return getHandler<T>(instance, event, _ignoreFormat)
+    }
   }
 }

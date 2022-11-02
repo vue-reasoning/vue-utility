@@ -1,15 +1,15 @@
-import { camelize, hyphenate } from '../../../common'
+import { hyphenate } from '../../../common'
 import { convertLegacyEventKey } from '../../legacy'
 import { toListenerKey } from './transform'
 
 const optionsModifierRE = /(?:Once|Passive|Capture)$/
 
-export interface ParsedEventOptions {
+export interface ParsedEvent {
   type: string
   options: EventListenerOptions | undefined
 }
 
-export function parseEventOptions(name: string): ParsedEventOptions {
+export function parseEvent(name: string): ParsedEvent {
   // for Vue2
   name = convertLegacyEventKey(toListenerKey(name))
 
@@ -27,30 +27,5 @@ export function parseEventOptions(name: string): ParsedEventOptions {
   return {
     type,
     options
-  }
-}
-
-export interface ParsedEventName {
-  origin: string
-  camelize: string
-  hyphenate: string
-}
-
-/**
- * @example
- * ```ts
- * parseEvent('onCourierArrives') -> {
- *  origin:    'courierArrives', // like `toListenerKey`
- *  camelize:  'courierArrives',
- *  hyphenate: 'courier-arrives'
- * }
- * ```
- */
-export function parseEventName(event: string): ParsedEventName {
-  const origin = toListenerKey(event)
-  return {
-    origin,
-    camelize: camelize(origin),
-    hyphenate: hyphenate(origin)
   }
 }
