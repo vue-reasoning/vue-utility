@@ -2,8 +2,7 @@ import { getCurrentInstance, isVue3 } from 'vue-demi'
 
 import { proxyFunction } from '../../../common'
 import { emitListener } from '../../options'
-
-export type AnyHandler = (event: string, ...args: any[]) => void
+import type { AnyHandler } from '../../options'
 
 /**
  * @param ignoreFormat Whether to ignore the event format.
